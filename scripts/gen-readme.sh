@@ -66,8 +66,8 @@ if [ ! -f "$readme" ]; then
     cat > "$readme" <<EOF
 # 3D-Models
 
-A catalog of 3D-printable designs. Each entry below is auto-generated from
-the source \`.scad\` files; see [CLAUDE.md](CLAUDE.md) for conventions.
+A catalog ofmy 3D-printable designs. Each entry below is auto-generated from
+the source \`.scad\` files.
 
 # Designs
 
