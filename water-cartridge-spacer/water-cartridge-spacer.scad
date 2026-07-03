@@ -1,12 +1,16 @@
 // Water Cartridge Spacer
 // A thin uniform-wall ring that sits between a water cartridge and its
 // housing, with four semicircular lobes (bumps) looping outward at 0, 90,
-// 180 and 270 degrees. Wall thickness is a constant 3.5 mm throughout.
+// 180 and 270 degrees. Wall thickness is a constant 5 mm throughout.
 
 wall         = 5;       // uniform wall thickness
 ring_outer   = 113.5;   // main ring outer radius (outside diameter fixed)
 lobe_extent  = 125.25;  // outermost radius incl. lobe (fixed)
 height       = 10;      // part thickness (Z)
+
+// Set true to emit the flat 2D outline instead of the full part — export
+// to SVG/DXF for a 1:1 paper printout to check size against the housing.
+footprint    = false;
 
 $fn = 240;
 
@@ -49,4 +53,5 @@ module spacer() {
         spacer_2d();
 }
 
-spacer();
+if (footprint) spacer_2d();  // 2D outline for SVG/DXF export
+else           spacer();
