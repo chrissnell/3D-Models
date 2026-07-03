@@ -14,6 +14,13 @@ the source `.scad` files.
 **Source:** [superwinch-adapter-plate.scad](superwinch-adapter-plate/superwinch-adapter-plate.scad)
 **3MF:** [superwinch-adapter-plate](superwinch-adapter-plate/3mf/superwinch-adapter-plate.3mf)
 
+## water-cartridge-spacer
+
+![water-cartridge-spacer/water-cartridge-spacer](water-cartridge-spacer/water-cartridge-spacer.png)
+
+**Source:** [water-cartridge-spacer.scad](water-cartridge-spacer/water-cartridge-spacer.scad)
+**3MF:** [water-cartridge-spacer](water-cartridge-spacer/3mf/water-cartridge-spacer.3mf)
+
 ## wire-mounts
 
 ![wire-mounts/wire_mount](wire-mounts/wire_mount.png)
