@@ -3,17 +3,20 @@
 // housing, with four semicircular lobes (bumps) looping outward at 0, 90,
 // 180 and 270 degrees. Wall thickness is a constant 3.5 mm throughout.
 
-ring_inner   = 110;    // main ring inner radius
-ring_outer   = 113.5;  // main ring outer radius
-lobe_inner   = 10;     // lobe inner radius
-lobe_outer   = 13.5;   // lobe outer radius
-height       = 10;     // part thickness (Z)
+wall         = 5;       // uniform wall thickness
+ring_outer   = 113.5;   // main ring outer radius (outside diameter fixed)
+lobe_extent  = 125.25;  // outermost radius incl. lobe (fixed)
+height       = 10;      // part thickness (Z)
 
 $fn = 240;
 
-// Wall centerlines: the lobe loop is stitched onto the main ring at its
-// centerline radius so the two equal-thickness (3.5 mm) walls stay flush.
-ring_mid = (ring_inner + ring_outer) / 2;  // 111.75
+// Outer extents are fixed; the thicker wall grows inward.
+ring_inner = ring_outer - wall;              // 108.5
+ring_mid   = (ring_inner + ring_outer) / 2;  // 111.0
+// Lobe loop is stitched onto the ring at its centerline so the two
+// equal-thickness walls stay flush; its tip lands on the fixed extent.
+lobe_outer = lobe_extent - ring_mid;         // 14.25
+lobe_inner = lobe_outer - wall;              // 9.25
 
 // A semicircular half-annulus opening outward along +X.
 module lobe_2d() {
