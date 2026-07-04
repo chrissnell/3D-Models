@@ -11,10 +11,10 @@ outward at 0°, 90°, 180°, and 270°.
 
 | Feature            | Value            |
 | ------------------ | ---------------- |
-| Ring outer         | Ø118.5 mm        |
-| Ring inner         | Ø113.5 mm        |
-| Wall thickness     | 2.5 mm           |
-| Lobe extent (tip)  | Ø130.25 mm       |
+| Ring outer         | Ø120.5 mm        |
+| Ring inner         | Ø112.0 mm        |
+| Wall thickness     | 4.25 mm          |
+| Lobe extent (tip)  | Ø136.25 mm       |
 | Height (thickness) | 10 mm            |
 
 ## Files
