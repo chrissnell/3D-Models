@@ -4,8 +4,8 @@
 // 180 and 270 degrees. Wall thickness is a constant 5 mm throughout.
 
 wall         = 5;        // uniform wall thickness
-ring_outer   = 56.75;    // main ring outer radius -> Ø113.5 outer diameter
-lobe_extent  = 62.625;   // outermost radius incl. lobe -> Ø125.25 extent
+ring_outer   = 59.25;    // main ring outer radius -> Ø118.5 outer diameter
+lobe_extent  = 65.125;   // outermost radius incl. lobe -> Ø130.25 extent
 height       = 10;       // part thickness (Z)
 
 // Set true to emit the flat 2D outline instead of the full part — export
@@ -14,9 +14,9 @@ footprint    = false;
 
 $fn = 240;
 
-// Outer extents are fixed; the wall grows inward.
-ring_inner = ring_outer - wall;              // 51.75
-ring_mid   = (ring_inner + ring_outer) / 2;  // 54.25
+// The 5 mm wall grows inward from the outer radius.
+ring_inner = ring_outer - wall;              // 54.25 -> Ø108.5
+ring_mid   = (ring_inner + ring_outer) / 2;  // 56.75
 // Lobe loop is stitched onto the ring at its centerline so the two
 // equal-thickness walls stay flush; its tip lands on the fixed extent.
 lobe_outer = lobe_extent - ring_mid;         // 8.375
