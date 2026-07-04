@@ -66,21 +66,29 @@ module spacer_2d() {
 
 // One ventilation triangle in the local +X frame. outward = true points the
 // apex toward the outer edge, false toward the ID; alternating them makes a
-// zig-zag truss. Base and apex sit at ring_mid -/+ h/2, so the midpoint
-// between the flat base and the opposite tip lands on ring_mid (the ID<->OD
-// midline) and both orientations fill the same radial band. Corners are
-// rounded by vent_round (erode then dilate keeps the edges put).
+// zig-zag truss.
+//
+// Rounding the corners (erode then dilate) leaves the flat base put but pulls
+// the sharp apex inward, so the *rounded* triangle is no longer centered on
+// its nominal band. A convex corner of half-angle t recedes by
+// vent_round*(1-sin t)/sin t; shifting the whole triangle half of that toward
+// its apex re-centers the rounded shape's radial span on ring_mid, so both
+// orientations end up in the identical band between the ID and OD edges.
+vent_apex_half = atan((vent_tri_b / 2) / vent_tri_h);
+vent_recenter  = vent_round * (1 - sin(vent_apex_half)) / sin(vent_apex_half) / 2;
+
 module vent_tri(outward) {
     ho = vent_tri_h / 2;
-    offset(r = vent_round) offset(delta = -vent_round)
-        if (outward)
-            polygon([[ring_mid - ho, -vent_tri_b/2],
-                     [ring_mid - ho,  vent_tri_b/2],
-                     [ring_mid + ho,  0]]);
-        else
-            polygon([[ring_mid + ho, -vent_tri_b/2],
-                     [ring_mid + ho,  vent_tri_b/2],
-                     [ring_mid - ho,  0]]);
+    translate([outward ? vent_recenter : -vent_recenter, 0])
+        offset(r = vent_round) offset(delta = -vent_round)
+            if (outward)
+                polygon([[ring_mid - ho, -vent_tri_b/2],
+                         [ring_mid - ho,  vent_tri_b/2],
+                         [ring_mid + ho,  0]]);
+            else
+                polygon([[ring_mid + ho, -vent_tri_b/2],
+                         [ring_mid + ho,  vent_tri_b/2],
+                         [ring_mid - ho,  0]]);
 }
 
 // Triangles arrayed all the way around the ring.
