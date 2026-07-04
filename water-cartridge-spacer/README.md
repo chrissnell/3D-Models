@@ -15,7 +15,7 @@ outward at 0°, 90°, 180°, and 270°.
 | Ring inner         | Ø112.0 mm        |
 | Wall thickness     | 4.25 mm          |
 | Lobe extent (tip)  | Ø136.25 mm       |
-| Height (thickness) | 10 mm            |
+| Height (thickness) | 5 mm             |
 
 ## Files
 
@@ -33,6 +33,6 @@ outward at 0°, 90°, 180°, and 270°.
 
 ## Printing
 
-PLA or PETG at 100% scale. Before committing to the full 10 mm part, print
+PLA or PETG at 100% scale. Before committing to the full 5 mm part, print
 the footprint PDF at **100% / Actual Size** (not "Fit to Page") and check it
 against the DIW-20 housing — the 100 mm calibration square confirms scale.

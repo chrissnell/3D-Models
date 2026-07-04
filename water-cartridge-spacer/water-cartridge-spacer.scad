@@ -6,7 +6,7 @@
 wall         = 4.25;     // ring wall thickness (radial)
 ring_outer   = 60.25;    // main ring outer radius -> Ø120.5 outer diameter
 lobe_extent  = 68.125;   // outermost radius incl. lobe -> Ø136.25 extent
-height       = 10;       // part thickness (Z)
+height       = 5;        // part thickness (Z)
 
 // Set true to emit the flat 2D outline instead of the full part — export
 // to SVG/DXF for a 1:1 paper printout to check size against the housing.
