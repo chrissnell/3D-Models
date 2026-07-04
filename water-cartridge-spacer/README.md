@@ -4,16 +4,16 @@ An improved internal spacer for the **CR Spotless DIW-20** deionized water
 softener unit. It sits between the resin cartridge and the housing, keeping
 the cartridge centered and correctly seated.
 
-The part is a uniform-wall ring with four semicircular lobes looping outward
-at 0°, 90°, 180°, and 270°.
+The part is a thin-wall ring with four solid semicircular lobes bumping
+outward at 0°, 90°, 180°, and 270°.
 
 ## Dimensions
 
 | Feature            | Value            |
 | ------------------ | ---------------- |
 | Ring outer         | Ø118.5 mm        |
-| Ring inner         | Ø108.5 mm        |
-| Wall thickness     | 5 mm (uniform)   |
+| Ring inner         | Ø113.5 mm        |
+| Wall thickness     | 2.5 mm           |
 | Lobe extent (tip)  | Ø130.25 mm       |
 | Height (thickness) | 10 mm            |
 

@@ -1,9 +1,9 @@
 // Water Cartridge Spacer
-// A thin uniform-wall ring that sits between a water cartridge and its
-// housing, with four semicircular lobes (bumps) looping outward at 0, 90,
-// 180 and 270 degrees. Wall thickness is a constant 5 mm throughout.
+// A ring that sits between a water cartridge and its housing, with four
+// solid semicircular lobes (bumps) at 0, 90, 180 and 270 degrees. The ring
+// wall is a constant 2.5 mm.
 
-wall         = 5;        // uniform wall thickness
+wall         = 2.5;      // ring wall thickness
 ring_outer   = 59.25;    // main ring outer radius -> Ø118.5 outer diameter
 lobe_extent  = 65.125;   // outermost radius incl. lobe -> Ø130.25 extent
 height       = 10;       // part thickness (Z)
@@ -14,22 +14,18 @@ footprint    = false;
 
 $fn = 240;
 
-// The 5 mm wall grows inward from the outer radius.
-ring_inner = ring_outer - wall;              // 54.25 -> Ø108.5
-ring_mid   = (ring_inner + ring_outer) / 2;  // 56.75
-// Lobe loop is stitched onto the ring at its centerline so the two
-// equal-thickness walls stay flush; its tip lands on the fixed extent.
-lobe_outer = lobe_extent - ring_mid;         // 8.375
-lobe_inner = lobe_outer - wall;              // 3.375
+// The wall grows inward from the fixed outer radius.
+ring_inner = ring_outer - wall;              // 56.75 -> Ø113.5
+ring_mid   = (ring_inner + ring_outer) / 2;  // 58.0
+// Solid lobe: half-disc with its flat edge on the ring centerline, so it
+// fuses to the ring and its rounded tip lands on the fixed extent.
+lobe_outer = lobe_extent - ring_mid;         // 7.125
 
-// A semicircular half-annulus opening outward along +X.
+// A solid semicircle opening outward along +X.
 module lobe_2d() {
-    difference() {
-        intersection() {
-            circle(r = lobe_outer);
-            translate([0, -lobe_outer]) square([lobe_outer, 2 * lobe_outer]);
-        }
-        circle(r = lobe_inner);
+    intersection() {
+        circle(r = lobe_outer);
+        translate([0, -lobe_outer]) square([lobe_outer, 2 * lobe_outer]);
     }
 }
 
