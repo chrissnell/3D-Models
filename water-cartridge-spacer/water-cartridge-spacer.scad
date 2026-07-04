@@ -24,7 +24,7 @@ height       = 5;        // part thickness (Z)
 vent_tri_h   = 4;        // triangle size across the wall (radial)
 vent_tri_b   = 5;        // triangle base (tangential)
 vent_step    = 9;        // angular spacing between triangles (deg)
-lobe_guard   = 14;       // keep vents at least this many deg clear of a lobe
+vent_round   = 0.75;     // corner-rounding radius on each triangle
 
 // Set true to emit the flat 2D outline instead of the full part — export
 // to SVG/DXF for a 1:1 paper printout to check size against the housing.
@@ -66,25 +66,26 @@ module spacer_2d() {
 
 // One ventilation triangle, centered on the ring wall in the local +X frame.
 // outward = true points the apex toward the outer edge, false toward the ID;
-// alternating them around the ring makes a zig-zag truss of struts.
+// alternating them around the ring makes a zig-zag truss of struts. The
+// corners are rounded by vent_round (erode then dilate keeps the edges put).
 module vent_tri(outward) {
     ho = vent_tri_h / 2;
-    if (outward)
-        polygon([[ring_mid - ho, -vent_tri_b/2],
-                 [ring_mid - ho,  vent_tri_b/2],
-                 [ring_mid + ho,  0]]);
-    else
-        polygon([[ring_mid + ho, -vent_tri_b/2],
-                 [ring_mid + ho,  vent_tri_b/2],
-                 [ring_mid - ho,  0]]);
+    offset(r = vent_round) offset(delta = -vent_round)
+        if (outward)
+            polygon([[ring_mid - ho, -vent_tri_b/2],
+                     [ring_mid - ho,  vent_tri_b/2],
+                     [ring_mid + ho,  0]]);
+        else
+            polygon([[ring_mid + ho, -vent_tri_b/2],
+                     [ring_mid + ho,  vent_tri_b/2],
+                     [ring_mid - ho,  0]]);
 }
 
-// Triangles arrayed around the ring, skipping the arcs near each lobe.
+// Triangles arrayed all the way around the ring.
 module vents_2d() {
     for (a = [0 : vent_step : 359.999])
-        if (a % 90 > lobe_guard && a % 90 < 90 - lobe_guard)
-            rotate(a)
-                vent_tri(round(a / vent_step) % 2 == 0);
+        rotate(a)
+            vent_tri(round(a / vent_step) % 2 == 0);
 }
 
 module spacer_2d_vented() {
