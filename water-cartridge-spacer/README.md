@@ -46,6 +46,7 @@ Set with the `part` dropdown (OpenSCAD Customizer) or `-D part=...`:
 
 ## Printing
 
-PLA or PETG at 100% scale. Before committing to the full 5 mm part, print
-the footprint PDF at **100% / Actual Size** (not "Fit to Page") and check it
-against the DIW-20 housing — the 100 mm calibration square confirms scale.
+ASA or PETG at 100% scale. Recommend 18% infill and gyroid pattern.
+Before committing to the full 5 mm part, print the footprint PDF at 
+**100% / Actual Size** (not "Fit to Page") and check it against the
+DIW-20 housing — the 100 mm calibration square confirms scale.
