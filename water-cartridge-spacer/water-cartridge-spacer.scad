@@ -23,7 +23,7 @@ height       = 5;        // part thickness (Z)
 // Ventilation triangles (only used by the "ventilated" variant).
 vent_tri_h   = 4;        // triangle size across the wall (radial)
 vent_tri_b   = 5;        // triangle base (tangential)
-vent_step    = 9;        // angular spacing between triangles (deg)
+vent_step    = 6;        // angular spacing between triangles (deg)
 vent_round   = 0.75;     // corner-rounding radius on each triangle
 
 // Set true to emit the flat 2D outline instead of the full part — export
