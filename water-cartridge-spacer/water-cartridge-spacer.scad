@@ -1,12 +1,18 @@
 // Water Cartridge Spacer
-// A ring that sits between a water cartridge and its housing, with four
-// solid semicircular lobes (bumps) at 0, 90, 180 and 270 degrees.
-// Sized by three diameters: the inner hole (ID), the ring outer edge,
-// and the total extent at the lobe tips.
+// An adapter that centers a cylinder inside a larger cylinder (CR Spotless
+// DIW-20 water softener). A ring with four solid semicircular lobes at 0,
+// 90, 180 and 270 degrees.
+//
+// Only two dimensions matter for the fit, and both are diameters:
+//   inner_diameter -> the hole that slips over the inner cylinder
+//   outer_diameter -> the circle through the lobe tips, which seats against
+//                     the bore of the outer cylinder
 
-ring_inner   = 53.25;    // inner radius   -> Ø106.5 ID
-ring_outer   = 60.25;    // ring outer radius -> Ø120.5 outer diameter
-lobe_extent  = 66.5;     // outermost radius incl. lobe -> Ø133 lobe-edge OD
+inner_diameter = 106.5;  // ID (over the inner cylinder)
+outer_diameter = 133;    // across the lobe tips (into the outer bore)
+
+// --- Secondary: shape/strength only, does not affect the centering fit ---
+wall         = 7;        // ring wall thickness (radial), grows out from the ID
 height       = 5;        // part thickness (Z)
 
 // Set true to emit the flat 2D outline instead of the full part — export
@@ -15,10 +21,13 @@ footprint    = false;
 
 $fn = 240;
 
-wall     = ring_outer - ring_inner;          // 7.0 (radial, derived)
-ring_mid = (ring_inner + ring_outer) / 2;    // 56.75
+// Derived radii.
+ring_inner = inner_diameter / 2;             // 53.25
+ring_outer = ring_inner + wall;              // 60.25
+lobe_extent = outer_diameter / 2;            // 66.5 -> lobe tips
+ring_mid   = (ring_inner + ring_outer) / 2;  // 56.75
 // Solid lobe: half-disc with its flat edge on the ring centerline, so it
-// fuses to the ring and its rounded tip lands on the fixed extent.
+// fuses to the ring and its rounded tip lands on the outer_diameter.
 lobe_outer = lobe_extent - ring_mid;         // 9.75
 
 // A solid semicircle opening outward along +X.
