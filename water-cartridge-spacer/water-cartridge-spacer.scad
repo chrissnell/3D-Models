@@ -66,21 +66,21 @@ module spacer_2d() {
 
 // One ventilation triangle in the local +X frame. outward = true points the
 // apex toward the outer edge, false toward the ID; alternating them makes a
-// zig-zag truss. A triangle's centroid sits 1/3 of its height from the base,
-// so base and apex are placed at ring_mid -/+ h/3 and +/- 2h/3 to land every
-// centroid exactly on ring_mid (the ID<->OD midline). Corners are rounded by
-// vent_round (erode then dilate keeps the edges put).
+// zig-zag truss. Base and apex sit at ring_mid -/+ h/2, so the midpoint
+// between the flat base and the opposite tip lands on ring_mid (the ID<->OD
+// midline) and both orientations fill the same radial band. Corners are
+// rounded by vent_round (erode then dilate keeps the edges put).
 module vent_tri(outward) {
-    h = vent_tri_h;
+    ho = vent_tri_h / 2;
     offset(r = vent_round) offset(delta = -vent_round)
         if (outward)
-            polygon([[ring_mid - h/3,   -vent_tri_b/2],
-                     [ring_mid - h/3,    vent_tri_b/2],
-                     [ring_mid + 2*h/3,  0]]);
+            polygon([[ring_mid - ho, -vent_tri_b/2],
+                     [ring_mid - ho,  vent_tri_b/2],
+                     [ring_mid + ho,  0]]);
         else
-            polygon([[ring_mid + h/3,   -vent_tri_b/2],
-                     [ring_mid + h/3,    vent_tri_b/2],
-                     [ring_mid - 2*h/3,  0]]);
+            polygon([[ring_mid + ho, -vent_tri_b/2],
+                     [ring_mid + ho,  vent_tri_b/2],
+                     [ring_mid - ho,  0]]);
 }
 
 // Triangles arrayed all the way around the ring.
