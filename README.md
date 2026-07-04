@@ -19,7 +19,7 @@ the source `.scad` files.
 ![water-cartridge-spacer/water-cartridge-spacer](water-cartridge-spacer/water-cartridge-spacer.png)
 
 **Source:** [water-cartridge-spacer.scad](water-cartridge-spacer/water-cartridge-spacer.scad)
-**3MF:** [water-cartridge-spacer](water-cartridge-spacer/3mf/water-cartridge-spacer.3mf)
+**3MF:** [solid](water-cartridge-spacer/3mf/water-cartridge-spacer-solid.3mf) · [ventilated](water-cartridge-spacer/3mf/water-cartridge-spacer-ventilated.3mf)
 
 ## wire-mounts
 

@@ -4,8 +4,18 @@ An improved internal spacer for the **CR Spotless DIW-20** deionized water
 softener unit. It sits between the resin cartridge and the housing, keeping
 the cartridge centered and correctly seated.
 
-The part is a thin-wall ring with four solid semicircular lobes bumping
-outward at 0°, 90°, 180°, and 270°.
+The part is a ring with four solid semicircular lobes bumping outward at 0°,
+90°, 180°, and 270°. Only two diameters matter for the fit — the inner hole
+(`inner_diameter`) and the circle through the lobe tips (`outer_diameter`);
+everything else derives from those.
+
+## Variants
+
+Set with the `part` dropdown (OpenSCAD Customizer) or `-D part=...`:
+
+- **solid** — plain ring.
+- **ventilated** — triangular through-holes cut in the ring wall so water
+  can flow axially through the gasket.
 
 ## Dimensions
 
@@ -19,9 +29,12 @@ outward at 0°, 90°, 180°, and 270°.
 
 ## Files
 
-- `water-cartridge-spacer.scad` — parametric OpenSCAD source. Edit `wall`,
-  `ring_outer`, `lobe_extent`, and `height` at the top to re-size.
-- `3mf/water-cartridge-spacer.3mf` — sliceable mesh for Bambu Studio.
+- `water-cartridge-spacer.scad` — parametric OpenSCAD source. Edit
+  `inner_diameter` and `outer_diameter` at the top to re-size; `wall`,
+  `height`, and the `vent_*` values are secondary knobs.
+- `3mf/water-cartridge-spacer-solid.3mf` /
+  `3mf/water-cartridge-spacer-ventilated.3mf` — sliceable meshes for Bambu
+  Studio.
 - `water-cartridge-spacer.png` — preview render.
 - `water-cartridge-spacer-footprint.svg` / `.dxf` — flat 1:1 outline
   (set `-D footprint=true`) for size validation against the housing.

@@ -11,9 +11,20 @@
 inner_diameter = 106.5;  // ID (over the inner cylinder)
 outer_diameter = 133;    // across the lobe tips (into the outer bore)
 
+// "ventilated" cuts triangular through-holes in the ring so water can flow
+// axially through the gasket; "solid" is the plain ring. "all" previews the
+// ventilated version.
+part = "all"; // [all, solid, ventilated]
+
 // --- Secondary: shape/strength only, does not affect the centering fit ---
 wall         = 7;        // ring wall thickness (radial), grows out from the ID
 height       = 5;        // part thickness (Z)
+
+// Ventilation triangles (only used by the "ventilated" variant).
+vent_tri_h   = 4;        // triangle size across the wall (radial)
+vent_tri_b   = 5;        // triangle base (tangential)
+vent_step    = 9;        // angular spacing between triangles (deg)
+lobe_guard   = 14;       // keep vents at least this many deg clear of a lobe
 
 // Set true to emit the flat 2D outline instead of the full part — export
 // to SVG/DXF for a 1:1 paper printout to check size against the housing.
@@ -53,10 +64,42 @@ module spacer_2d() {
     }
 }
 
-module spacer() {
-    linear_extrude(height = height)
-        spacer_2d();
+// One ventilation triangle, centered on the ring wall in the local +X frame.
+// outward = true points the apex toward the outer edge, false toward the ID;
+// alternating them around the ring makes a zig-zag truss of struts.
+module vent_tri(outward) {
+    ho = vent_tri_h / 2;
+    if (outward)
+        polygon([[ring_mid - ho, -vent_tri_b/2],
+                 [ring_mid - ho,  vent_tri_b/2],
+                 [ring_mid + ho,  0]]);
+    else
+        polygon([[ring_mid + ho, -vent_tri_b/2],
+                 [ring_mid + ho,  vent_tri_b/2],
+                 [ring_mid - ho,  0]]);
 }
 
-if (footprint) spacer_2d();  // 2D outline for SVG/DXF export
-else           spacer();
+// Triangles arrayed around the ring, skipping the arcs near each lobe.
+module vents_2d() {
+    for (a = [0 : vent_step : 359.999])
+        if (a % 90 > lobe_guard && a % 90 < 90 - lobe_guard)
+            rotate(a)
+                vent_tri(round(a / vent_step) % 2 == 0);
+}
+
+module spacer_2d_vented() {
+    difference() {
+        spacer_2d();
+        vents_2d();
+    }
+}
+
+module spacer(vented = false) {
+    linear_extrude(height = height)
+        if (vented) spacer_2d_vented();
+        else        spacer_2d();
+}
+
+if (footprint)                    spacer_2d();          // 2D outline for export
+else if (part == "solid")         spacer();
+else                              spacer(vented = true); // "ventilated" + "all"
