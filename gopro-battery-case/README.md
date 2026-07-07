@@ -30,6 +30,10 @@ or "load as parts"), assign a different filament to the logo, and slice. On a
 single-nozzle printer use paint-by-object / multi-material; on an AMS it just
 works. Set `logo_enable = false` in the `.scad` for a plain lid.
 
+Resize the logo with `logo_scale` (a multiplier on `logo_width`): `1.0` fills
+the flat top; values above `1.0` make it larger and let it spill over the
+chamfered edge (a build warning notes when it does).
+
 ## Dependency
 
 [BOSL2](https://github.com/BelfrySCAD/BOSL2) on the OpenSCAD library path
