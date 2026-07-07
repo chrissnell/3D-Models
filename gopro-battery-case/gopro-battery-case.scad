@@ -9,9 +9,8 @@ include <BOSL2/std.scad>
 include <BOSL2/threading.scad>
 
 /* [Part] */
-// all = assembled preview; base/lid/logo are the printable parts.
-// (lid carries the logo pocket; logo is the flush second-filament inlay.)
-part = "all";   // [all, base, lid, logo]
+// all = assembled preview; base/lid are the printable parts.
+part = "all";   // [all, base, lid]
 
 /* [Body] */
 body_d      = 104;   // knurled outer diameter of the body
@@ -58,16 +57,6 @@ knurl_size = 4;         // diamond cell size
 
 /* [Edges] */
 edge_chamfer = 3;       // 45 deg smooth (un-knurled) chamfer on base bottom & lid top
-
-/* [Logo] */
-logo_enable = true;         // inlay the GoPro logo flush into the lid top
-logo_file   = "GoPro_logo_light.svg";
-logo_svg_w  = 77.1;         // logo SVG viewBox width  (do not change)
-logo_svg_h  = 23.6;         // logo SVG viewBox height (do not change)
-logo_width  = 92;           // base logo size across the lid top (mm)
-logo_scale  = 2.0;          // <-- tweak this to resize the logo. 1.0 fills the flat
-                            //     top; >1.0 is clipped to the cap edge.
-logo_depth  = 1.2;          // inlay depth; top sits flush with the lid (mm)
 
 /* [Quality] */
 $fa = 2;
@@ -152,22 +141,7 @@ module base() {
     }
 }
 
-// Effective logo width on the lid (mm).
-function logo_w() = logo_width * logo_scale;
-
-// GoPro logo as a 2D shape, scaled and centred on the lid top.
-module logo_2d() {
-    s = logo_w() / logo_svg_w;
-    scale([s, s]) import(logo_file, center=true);
-}
-
-// Logo extruded across the roof (unclipped); shared by the pocket and inlay.
-module logo_prism() {
-    up(lid_h - logo_depth) linear_extrude(logo_depth + eps) logo_2d();
-}
-
-// The cap without the logo pocket.
-module lid_solid() {
+module lid() {
     thread_h = neck_h;                      // internal thread engagement
     cavity_h = neck_h + lid_relief;         // skirt depth: engagement + relief
     relief_d = neck_major + 1;              // clear bore above the thread
@@ -183,42 +157,19 @@ module lid_solid() {
     }
     assert(lid_h - cavity_h >= lid_top - eps, "lid_h too short for cavity + roof");
     assert(lid_relief >= 16, "lid_relief must be >= 16 mm");
-    assert(!logo_enable || logo_depth < lid_top, "logo_depth must be < lid_top");
-    // Warn (don't fail) if the logo spills past the flat top onto the chamfer.
-    logo_r     = (logo_w()/2) * sqrt(1 + pow(logo_svg_h/logo_svg_w, 2));
-    flat_top_r = body_d/2 - edge_chamfer;
-    if (logo_enable && logo_r > flat_top_r)
-        echo(str("WARNING: logo extends past the flat top (logo_scale=",
-                 logo_scale, "); it is clipped to the cap edge."));
-}
-
-// The cap with the logo pocket cut into the top.
-module lid() {
-    if (logo_enable) difference() { lid_solid(); logo_prism(); }
-    else lid_solid();
-}
-
-// The logo inlay: exactly the material removed by the pocket, so it stays
-// clipped to the cap and flush with the top at any logo_scale. Second filament.
-module logo_inlay() {
-    intersection() { lid_solid(); logo_prism(); }
 }
 
 module assembly() {
     base();
     // Lid (modelled opening-down) dropped onto the neck shoulder.
     shoulder_z = body_h - neck_h;
-    translate([0,0, shoulder_z]) {
-        color("SlateBlue") lid();
-        if (logo_enable) color("#00AEEF") logo_inlay();
-    }
+    color("SlateBlue") translate([0,0, shoulder_z]) lid();
 }
 
 // --- Printable parts (Customizer / Makefile) ---
 if (part == "all") assembly();          // assembled preview (not exported)
 else if (part == "base") base();
-else if (part == "lid")  lid();          // includes the logo pocket
-else if (part == "logo") logo_inlay();   // flush second-filament inlay
+else if (part == "lid")  lid();
 // --- Diagnostic cross-sections (not exported) ---
 else if (part == "closed")
     difference() { assembly(); translate([0,-200,-50]) cube([200,400,400]); }
