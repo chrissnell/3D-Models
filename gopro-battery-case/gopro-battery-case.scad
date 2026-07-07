@@ -65,8 +65,8 @@ logo_file   = "GoPro_logo_light.svg";
 logo_svg_w  = 77.1;         // logo SVG viewBox width  (do not change)
 logo_svg_h  = 23.6;         // logo SVG viewBox height (do not change)
 logo_width  = 92;           // base logo size across the lid top (mm)
-logo_scale  = 1.0;          // <-- tweak this to resize the logo. 1.0 fills the flat
-                            //     top; >1.0 spills over the chamfered edge.
+logo_scale  = 2.0;          // <-- tweak this to resize the logo. 1.0 fills the flat
+                            //     top; >1.0 is clipped to the cap edge.
 logo_depth  = 1.2;          // inlay depth; top sits flush with the lid (mm)
 
 /* [Quality] */
@@ -161,13 +161,13 @@ module logo_2d() {
     scale([s, s]) import(logo_file, center=true);
 }
 
-// The logo inlay solid: fills the top logo_depth of the roof, top face flush
-// with the lid top (z = lid_h). Print this in the second filament.
-module logo_inlay() {
-    up(lid_h - logo_depth) linear_extrude(logo_depth) logo_2d();
+// Logo extruded across the roof (unclipped); shared by the pocket and inlay.
+module logo_prism() {
+    up(lid_h - logo_depth) linear_extrude(logo_depth + eps) logo_2d();
 }
 
-module lid() {
+// The cap without the logo pocket.
+module lid_solid() {
     thread_h = neck_h;                      // internal thread engagement
     cavity_h = neck_h + lid_relief;         // skirt depth: engagement + relief
     relief_d = neck_major + 1;              // clear bore above the thread
@@ -180,11 +180,7 @@ module lid() {
         // Internal ACME thread at the opening.
         acme_threaded_rod(d=neck_major, l=thread_h + eps, pitch=thread_pitch,
                           internal=true, bevel2=false, $slop=slop, anchor=BOTTOM);
-        // Logo pocket in the top, flush with the surface.
-        if (logo_enable)
-            up(lid_h - logo_depth) linear_extrude(logo_depth + eps) logo_2d();
     }
-    // Sanity: roof thickness must match.
     assert(lid_h - cavity_h >= lid_top - eps, "lid_h too short for cavity + roof");
     assert(lid_relief >= 16, "lid_relief must be >= 16 mm");
     assert(!logo_enable || logo_depth < lid_top, "logo_depth must be < lid_top");
@@ -193,7 +189,19 @@ module lid() {
     flat_top_r = body_d/2 - edge_chamfer;
     if (logo_enable && logo_r > flat_top_r)
         echo(str("WARNING: logo extends past the flat top (logo_scale=",
-                 logo_scale, "); it will clip at the chamfered edge."));
+                 logo_scale, "); it is clipped to the cap edge."));
+}
+
+// The cap with the logo pocket cut into the top.
+module lid() {
+    if (logo_enable) difference() { lid_solid(); logo_prism(); }
+    else lid_solid();
+}
+
+// The logo inlay: exactly the material removed by the pocket, so it stays
+// clipped to the cap and flush with the top at any logo_scale. Second filament.
+module logo_inlay() {
+    intersection() { lid_solid(); logo_prism(); }
 }
 
 module assembly() {
