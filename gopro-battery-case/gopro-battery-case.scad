@@ -62,8 +62,9 @@ edge_chamfer = 3;       // 45 deg smooth (un-knurled) chamfer on base bottom & l
 /* [Logo] */
 logo_enable = true;         // inlay the GoPro logo flush into the lid top
 logo_file   = "GoPro_logo_light.svg";
-logo_svg_w  = 77.1;         // logo SVG viewBox width (do not change)
-logo_width  = 60;           // logo size across the lid top (mm)
+logo_svg_w  = 77.1;         // logo SVG viewBox width  (do not change)
+logo_svg_h  = 23.6;         // logo SVG viewBox height (do not change)
+logo_width  = 88;           // logo size across the lid top (mm) — near the max that fits
 logo_depth  = 1.2;          // inlay depth; top sits flush with the lid (mm)
 
 /* [Quality] */
@@ -182,6 +183,11 @@ module lid() {
     assert(lid_h - cavity_h >= lid_top - eps, "lid_h too short for cavity + roof");
     assert(lid_relief >= 16, "lid_relief must be >= 16 mm");
     assert(!logo_enable || logo_depth < lid_top, "logo_depth must be < lid_top");
+    // Logo must stay within the flat top disc (inside the chamfer).
+    logo_r    = (logo_width/2) * sqrt(1 + pow(logo_svg_h/logo_svg_w, 2));
+    flat_top_r = body_d/2 - edge_chamfer;
+    assert(!logo_enable || logo_r <= flat_top_r - 1,
+           "logo_width too large for the lid top");
 }
 
 module assembly() {
