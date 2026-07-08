@@ -23,13 +23,15 @@ lid_top        = 4;  // solid thickness of the lid roof
 lid_relief     = 18; // clear space above the body top for proud batteries/cards (>=16)
 
 /* [Thread] */
-// Coarse trapezoidal (ACME-family) thread: flat, squared-off teeth print far
-// better than fine/pointed ones. Deep + coarse = fat, robust teeth; few turns
-// = easy to seat; generous clearance = tolerant of a little warp.
+// Coarse thread that prints and screws easily. Default is a round (knuckle)
+// profile matching the reference design: rounded crest/root, no sharp tips, the
+// most forgiving profile to print. "trapezoid" keeps a flat-crested ACME-style
+// tooth. Deep + coarse = fat, robust teeth; few turns = easy to seat.
+thread_shape  = "round"; // [round, trapezoid] - round (knuckle) matches the ref
 thread_pitch  = 3;    // tooth spacing (mm)
 thread_turns  = 3;    // number of turns of thread -> neck height = turns * pitch
 thread_depth  = 1.8;  // radial tooth depth (fatter/deeper than the ACME default)
-thread_angle  = 30;   // included flank angle (small = fat flat-crested teeth)
+thread_angle  = 30;   // trapezoid only: included flank angle
 thread_starts = 1;    // lead starts; raise to seat in fewer rotations (multi-start)
 slop          = 0.25; // radial clearance added to the internal (lid) thread
 
@@ -134,12 +136,23 @@ module knurled_wall(d, h, cham_b=0, cham_t=0) {
 // Shared coarse trapezoidal thread (external on the neck, internal in the lid).
 // blunt_start (default) tapers the ends into a lead-in, removing the fragile
 // paper-thin thread tip and making the cap easy to start.
+// Rounded (knuckle) tooth: a smooth cosine from root->crest->root over one
+// pitch. X in [-1/2,1/2], Y=0 at the crest, -depth/pitch at the root.
+function round_profile() =
+    let(n = 32, a = thread_depth / thread_pitch)
+    [ for (i = [0:n]) let(x = -0.5 + i/n) [x, -a * 0.5 * (1 - cos(360 * x))] ];
+
 module neck_thread(l, internal=false) {
-    trapezoidal_threaded_rod(
-        d=neck_major, l=l, pitch=thread_pitch,
-        thread_angle=thread_angle, thread_depth=thread_depth, starts=thread_starts,
-        internal=internal, $slop=internal ? slop : 0,
-        anchor=BOTTOM);
+    sl = internal ? slop : 0;
+    if (thread_shape == "round")
+        generic_threaded_rod(
+            d=neck_major, l=l, pitch=thread_pitch, profile=round_profile(),
+            starts=thread_starts, internal=internal, $slop=sl, anchor=BOTTOM);
+    else
+        trapezoidal_threaded_rod(
+            d=neck_major, l=l, pitch=thread_pitch,
+            thread_angle=thread_angle, thread_depth=thread_depth, starts=thread_starts,
+            internal=internal, $slop=sl, anchor=BOTTOM);
 }
 
 module base() {
