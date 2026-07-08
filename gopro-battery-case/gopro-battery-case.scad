@@ -15,18 +15,23 @@ part = "all";   // [all, base, lid]
 /* [Body] */
 body_d      = 104;   // knurled outer diameter of the body
 body_h      = 40;    // total body height
-neck_major  = 96;    // ACME thread major (crest) diameter of the top neck
-neck_h      = 10;    // threaded neck height / engagement length (short = less travel)
+neck_major  = 96;    // thread major (crest) diameter of the top neck
 floor_h     = 8;     // solid floor under the deepest pocket (strength)
 
 /* [Lid] */
-lid_h          = 32; // total lid height (= neck_h + lid_relief + lid_top)
 lid_top        = 4;  // solid thickness of the lid roof
 lid_relief     = 18; // clear space above the body top for proud batteries/cards (>=16)
 
 /* [Thread] */
-thread_pitch = 2.5;  // ACME pitch (finer thread)
-slop         = 0.15; // printer clearance added to the internal (lid) thread
+// Coarse trapezoidal (ACME-family) thread: flat, squared-off teeth print far
+// better than fine/pointed ones. Deep + coarse = fat, robust teeth; few turns
+// = easy to seat; generous clearance = tolerant of a little warp.
+thread_pitch  = 3;    // tooth spacing (mm)
+thread_turns  = 3;    // number of turns of thread -> neck height = turns * pitch
+thread_depth  = 1.8;  // radial tooth depth (fatter/deeper than the ACME default)
+thread_angle  = 30;   // included flank angle (small = fat flat-crested teeth)
+thread_starts = 1;    // lead starts; raise to seat in fewer rotations (multi-start)
+slop          = 0.25; // radial clearance added to the internal (lid) thread
 
 /* [Batteries] */
 // Slot dimensions per spec (34 x 13.5 mm, 29 mm deep).
@@ -63,6 +68,9 @@ $fa = 2;
 $fs = 0.6;
 
 // ---------------------------------------------------------------------------
+
+neck_h = thread_turns * thread_pitch;   // threaded neck height / engagement length
+lid_h  = neck_h + lid_relief + lid_top; // total lid height
 
 corner_round = 2;       // fillet radius of pocket corners
 eps = 0.05;
@@ -123,6 +131,17 @@ module knurled_wall(d, h, cham_b=0, cham_t=0) {
     if (cham_t > 0) up(h - cham_t) cyl(d1=d, d2=d - 2*cham_t, h=cham_t, anchor=BOTTOM);
 }
 
+// Shared coarse trapezoidal thread (external on the neck, internal in the lid).
+// blunt_start (default) tapers the ends into a lead-in, removing the fragile
+// paper-thin thread tip and making the cap easy to start.
+module neck_thread(l, internal=false) {
+    trapezoidal_threaded_rod(
+        d=neck_major, l=l, pitch=thread_pitch,
+        thread_angle=thread_angle, thread_depth=thread_depth, starts=thread_starts,
+        internal=internal, $slop=internal ? slop : 0,
+        anchor=BOTTOM);
+}
+
 module base() {
     lower_h = body_h - neck_h;
     difference() {
@@ -130,8 +149,7 @@ module base() {
             // Lower knurled barrel; smooth chamfer on the exposed bottom edge.
             knurled_wall(body_d, lower_h, cham_b=edge_chamfer);
             // Threaded neck on top, reduced so the lid sits flush with the body.
-            up(lower_h) acme_threaded_rod(d=neck_major, l=neck_h, pitch=thread_pitch,
-                                          bevel1=false, anchor=BOTTOM);
+            up(lower_h) neck_thread(neck_h);
         }
         // Pockets cut from the top face down.
         up(body_h) {
@@ -151,9 +169,8 @@ module lid() {
         // Relief bore above the thread region.
         up(thread_h - eps)
             cyl(d=relief_d, h=cavity_h - thread_h + eps, anchor=BOTTOM);
-        // Internal ACME thread at the opening.
-        acme_threaded_rod(d=neck_major, l=thread_h + eps, pitch=thread_pitch,
-                          internal=true, bevel2=false, $slop=slop, anchor=BOTTOM);
+        // Internal thread at the opening (matches the neck, plus clearance).
+        neck_thread(thread_h + eps, internal=true);
     }
     assert(lid_h - cavity_h >= lid_top - eps, "lid_h too short for cavity + roof");
     assert(lid_relief >= 16, "lid_relief must be >= 16 mm");
