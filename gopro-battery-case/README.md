@@ -14,6 +14,18 @@ cards** — no camera. ~104 mm diameter.
 
 Everything is parametric — see the variables at the top of the `.scad`.
 
+## SD slot fit-test
+
+The production microSD slots (`sd_slot_t = 1.0 mm`) hold cards a touch too
+loosely and they can work their way out. `sd-slot-test.scad` is a small
+throwaway print — a block with five slots identical to the real pocket except
+for thickness, stepping 0.95 → 0.90 → 0.85 → 0.80 → 0.75 mm. The slots are
+packed tight to keep it small, and each is identified by a row of round
+indentations beside it (one dimple for slot 1, two for slot 2, … five for slot
+5 — count the dimples). Print it, find the tightest slot that still seats and
+releases a card cleanly, then set the case's `sd_slot_t` to that value and
+rebuild.
+
 ## Parts
 
 | Part | 3MF | Notes |

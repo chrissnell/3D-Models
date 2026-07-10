@@ -14,6 +14,11 @@ the source `.scad` files.
 **Source:** [gopro-battery-case.scad](gopro-battery-case/gopro-battery-case.scad)
 **3MF:** [base](gopro-battery-case/3mf/gopro-battery-case-base.3mf) · [lid](gopro-battery-case/3mf/gopro-battery-case-lid.3mf)
 
+![gopro-battery-case/sd-slot-test](gopro-battery-case/sd-slot-test.png)
+
+**Source:** [sd-slot-test.scad](gopro-battery-case/sd-slot-test.scad)
+**3MF:** [sd-slot-test](gopro-battery-case/3mf/sd-slot-test.3mf)
+
 ## superwinch-adapter-plate
 
 ![superwinch-adapter-plate/superwinch-adapter-plate](superwinch-adapter-plate/superwinch-adapter-plate.png)
