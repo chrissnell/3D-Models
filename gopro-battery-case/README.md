@@ -4,7 +4,7 @@ A screw-top cylindrical case that holds **6 GoPro batteries** and **16 microSD
 cards** — no camera. ~104 mm diameter.
 
 - Batteries: 6 pockets (34 × 13.5 mm, 29 mm deep).
-- microSD: 16 slots (12.5 × 1 mm, 10 mm deep), spread away from the batteries so
+- microSD: 16 slots (12.5 mm wide, 0.80 mm thick, 10 mm deep), spread away from the batteries so
   each card can be pinched out; some sit above/below the battery block.
 - Screw-on lid over a reduced-diameter neck with a coarse round (knuckle) thread
   (3 mm pitch, ~3 turns) that prints cleanly and screws easily; flush with the
@@ -16,15 +16,14 @@ Everything is parametric — see the variables at the top of the `.scad`.
 
 ## SD slot fit-test
 
-The production microSD slots (`sd_slot_t = 1.0 mm`) hold cards a touch too
-loosely and they can work their way out. `sd-slot-test.scad` is a small
-throwaway print — a block with five slots identical to the real pocket except
-for thickness, stepping 0.95 → 0.90 → 0.85 → 0.80 → 0.75 mm. The slots are
-packed tight to keep it small, and each is identified by a row of round
-indentations beside it (one dimple for slot 1, two for slot 2, … five for slot
-5 — count the dimples). Print it, find the tightest slot that still seats and
-releases a card cleanly, then set the case's `sd_slot_t` to that value and
-rebuild.
+The original slots (`sd_slot_t = 1.0 mm`) held cards too loosely and they could
+work their way out. `sd-slot-test.scad` is a small throwaway print — a block
+with five slots identical to the real pocket except for thickness, stepping
+0.95 → 0.90 → 0.85 → 0.80 → 0.75 mm, each identified by a row of round
+indentations beside it (one dimple for slot 1, … five for slot 5). Testing
+settled on **0.80 mm** (slot 4) as the tightest slot that still seats and
+releases a card cleanly, so the case now uses `sd_slot_t = 0.80 mm`. The test
+block is kept for reference should the fit need re-tuning.
 
 ## Parts
 
