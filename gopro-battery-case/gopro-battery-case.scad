@@ -44,13 +44,14 @@ batt_wall_x    = 3;   // wall between columns
 batt_wall_y    = 4;   // wall between the two rows
 
 /* [microSD] */
-// Slot dimensions per spec (12.5 x 1 mm, 10 mm deep). Cards are pulled away from
+// Slot dimensions (12.5 mm wide, 10 mm deep; thickness fit-tested to 0.80 mm so
+// cards grip instead of falling out). Cards are pulled away from
 // the batteries and spread into the free space so each one can be pinched:
 //   - inner column of 4 per side, moved outboard from the battery block
 //   - 2 outboard slots per side, pushed toward the edge
 //   - 2 slots relocated above the batteries, 2 below (one from each side)
 sd_slot_w      = 12.5; // slot width (card width)
-sd_slot_t      = 1;    // slot thickness (card thickness)
+sd_slot_t      = 0.80; // slot thickness (fit-tested: 0.80 mm grips the card)
 sd_slot_depth  = 10;   // pocket depth
 sd_inner_x     = 30;   // X of the inner column of 4 (off the batteries)
 sd_inner_rp    = 14.5; // row pitch of the inner column
