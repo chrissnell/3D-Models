@@ -21,8 +21,10 @@ include <BOSL2/std.scad>
 
 /* [Part] */
 // all = assembled preview; exploded = corners pulled apart;
-// the rest are printable parts.
-part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail, hanger, alignment]
+// the rest are printable parts. The 2D alignment template is not in the
+// dropdown because it's not a 3D printable part - render it manually via
+// -D 'part="alignment"' when a fresh paper template is needed.
+part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail, hanger]
 
 /* [Preview] */
 explode_gap = 20;   // mm to pull each rail outward in the exploded view

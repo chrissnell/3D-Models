@@ -7,6 +7,13 @@ the source `.scad` files.
 
 <!-- designs:start -->
 
+## dog-food-can-cap
+
+![dog-food-can-cap/can_cap](dog-food-can-cap/can_cap.png)
+
+**Source:** [can_cap.scad](dog-food-can-cap/can_cap.scad)
+**3MF:** [can_cap](dog-food-can-cap/3mf/can_cap.3mf)
+
 ## gopro-battery-case
 
 ![gopro-battery-case/gopro-battery-case](gopro-battery-case/gopro-battery-case.png)
@@ -18,6 +25,34 @@ the source `.scad` files.
 
 **Source:** [sd-slot-test.scad](gopro-battery-case/sd-slot-test.scad)
 **3MF:** [sd-slot-test](gopro-battery-case/3mf/sd-slot-test.3mf)
+
+## laptop-stand
+
+![laptop-stand/laptop-stand](laptop-stand/laptop-stand.png)
+
+**Source:** [laptop-stand.scad](laptop-stand/laptop-stand.scad)
+**3MF:** [left](laptop-stand/3mf/laptop-stand-left.3mf) · [right](laptop-stand/3mf/laptop-stand-right.3mf) · [back](laptop-stand/3mf/laptop-stand-back.3mf) · [top](laptop-stand/3mf/laptop-stand-top.3mf)
+
+## led-matrix-frame-v2
+
+![led-matrix-frame-v2/led-matrix-frame-v2](led-matrix-frame-v2/led-matrix-frame-v2.png)
+
+**Source:** [led-matrix-frame-v2.scad](led-matrix-frame-v2/led-matrix-frame-v2.scad)
+**3MF:** [exploded](led-matrix-frame-v2/3mf/led-matrix-frame-v2-exploded.3mf) · [top_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-top_rail.3mf) · [bottom_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-bottom_rail.3mf) · [side_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail.3mf) · [hanger](led-matrix-frame-v2/3mf/led-matrix-frame-v2-hanger.3mf)
+
+## led-matrix-frame
+
+![led-matrix-frame/led-matrix-frame](led-matrix-frame/led-matrix-frame.png)
+
+**Source:** [led-matrix-frame.scad](led-matrix-frame/led-matrix-frame.scad)
+**3MF:** [exploded](led-matrix-frame/3mf/led-matrix-frame-exploded.3mf) · [front_left](led-matrix-frame/3mf/led-matrix-frame-front_left.3mf) · [front_right](led-matrix-frame/3mf/led-matrix-frame-front_right.3mf) · [rear_left](led-matrix-frame/3mf/led-matrix-frame-rear_left.3mf) · [rear_right](led-matrix-frame/3mf/led-matrix-frame-rear_right.3mf) · [pins](led-matrix-frame/3mf/led-matrix-frame-pins.3mf) · [rail](led-matrix-frame/3mf/led-matrix-frame-rail.3mf) · [leg](led-matrix-frame/3mf/led-matrix-frame-leg.3mf) · [wall_bracket](led-matrix-frame/3mf/led-matrix-frame-wall_bracket.3mf)
+
+## marbles-container
+
+![marbles-container/marbles-container](marbles-container/marbles-container.png)
+
+**Source:** [marbles-container.scad](marbles-container/marbles-container.scad)
+**3MF:** [base](marbles-container/3mf/marbles-container-base.3mf) · [lid](marbles-container/3mf/marbles-container-lid.3mf) · [lid-text](marbles-container/3mf/marbles-container-lid-text.3mf)
 
 ## superwinch-adapter-plate
 
