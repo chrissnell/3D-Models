@@ -24,7 +24,7 @@ include <BOSL2/std.scad>
 // the rest are printable parts. The 2D alignment template is not in the
 // dropdown because it's not a 3D printable part - render it manually via
 // -D 'part="alignment"' when a fresh paper template is needed.
-part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail, hanger]
+part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail_left, side_rail_right, hanger]
 
 /* [Preview] */
 explode_gap = 20;   // mm to pull each rail outward in the exploded view
@@ -231,7 +231,8 @@ if (part == "all")           assembled_preview(gap = 0);
 if (part == "exploded")      assembled_preview(gap = explode_gap);
 if (part == "top_rail")      printable_rail("top");
 if (part == "bottom_rail")   printable_rail("bottom");
-if (part == "side_rail")     printable_rail("left");
+if (part == "side_rail_left")  printable_rail("left");
+if (part == "side_rail_right") printable_rail("right");
 if (part == "hanger")        printable_hanger();
 if (part == "alignment")     alignment_template();
 
@@ -260,10 +261,15 @@ module printable_rail(which) {
     // rotation about X maps the model's +Y and -Z into the bed-friendly
     // orientation (front face sits at print Z=0, back of frame at Z=frame_depth).
     // No translate needed - rotate alone puts the piece at Z=0 to Z=frame_depth.
+    // Note: side rails are HANDED because the hanger socket knuckle sits
+    // only at +Y (not mirrored to -Y). One printed left rail cannot be
+    // flipped to serve as a right rail — the socket would end up at the
+    // bottom corner instead of the top. Separate parts per side.
     rotate([180, 0, 0])
-        if (which == "top")    top_rail();
+        if (which == "top")         top_rail();
         else if (which == "bottom") bottom_rail();
-        else                   left_rail();  // side rails are symmetric
+        else if (which == "left")   left_rail();
+        else if (which == "right")  right_rail();
 }
 
 // =====================================================================
