@@ -175,11 +175,13 @@ hanger_bar_w            = 20;            // bar width in Y
 
 hanger_pin_tip_chamfer  = 0.5;           // 45° break on pin tip for easier entry
 
-// Keyhole slot in bar: round opening at bottom (nail head drops in), narrow
-// slot rising upward (nail shank catches as frame slides down).
-hanger_keyhole_round_d  = 8;             // Ø of nail-head drop-in
-hanger_keyhole_slot_w   = 4;             // nail-shank slot width
-hanger_keyhole_slot_h   = 10;            // how far the slot extends above the round
+// Teardrop keyhole: wide lower lobe (nail head drops in), narrow upper lobe
+// (nail shank catches as frame slides down). Sized small to keep plenty of
+// material around the opening — top of the narrow lobe clears the bar's
+// top edge by ~3.5 mm with defaults.
+hanger_keyhole_round_d  = 6;             // Ø of wide (lower) lobe — nail head
+hanger_keyhole_slot_w   = 3;             // Ø of narrow (upper) lobe — nail shank
+hanger_keyhole_slot_h   = 5;             // Y offset between the two lobe centers
 
 // ===== Hanger invariants (fail fast at render time) =====
 assert(hanger_pin_axis_x == side_insert_x,
@@ -194,6 +196,8 @@ assert(hanger_pin_axis_y > 0,
        "hanger_pin_axis_y must be positive; the hanger is designed to hang from the upper half of the side rails.");
 assert(hanger_keyhole_slot_w < hanger_keyhole_round_d,
        "keyhole slot must be narrower than the round drop-in opening or the nail head would fall through the slot.");
+assert(hanger_pin_axis_y + hanger_keyhole_slot_h + hanger_keyhole_slot_w/2 < hanger_pin_axis_y + hanger_bar_w/2,
+       "teardrop keyhole extends past the top edge of the bar; shrink hanger_keyhole_slot_h or hanger_keyhole_slot_w, or widen hanger_bar_w.");
 
 // Socket thru-hole must be coaxial with the top side-rail ears (A, D).
 // If this fires, the service-port screwdriver access is broken.
