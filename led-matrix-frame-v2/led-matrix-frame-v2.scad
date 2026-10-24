@@ -186,8 +186,12 @@ is coaxial with the top side-rail ear's M3 hole (screwdriver service port).");
 assert(hanger_bar_t >= corner_knuckle_t,
        "hanger_bar_t must be >= corner_knuckle_t; otherwise the socket would \
 not sit forward enough for the pin to reach it with the bar flush to the back.");
-assert(hanger_pin_axis_y + corner_knuckle_base_w/2 < inner_y - corner_knuckle_base_w,
-       "hanger knuckle Y footprint overlaps the top-pair corner knuckle base.");
+assert(hanger_pin_axis_y + corner_knuckle_base_w < inner_y - corner_pin_axis_depth,
+       "hanger knuckle Y footprint must stay clear of the top-pair corner knuckle base; move hanger_pin_axis_y inboard or reduce corner_knuckle_base_w.");
+assert(hanger_pin_axis_y > 0,
+       "hanger_pin_axis_y must be positive; the hanger is designed to hang from the upper half of the side rails.");
+assert(hanger_keyhole_slot_w < hanger_keyhole_round_d,
+       "keyhole slot must be narrower than the round drop-in opening or the nail head would fall through the slot.");
 
 $fn = 48;
 
