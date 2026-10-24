@@ -193,6 +193,13 @@ assert(hanger_pin_axis_y > 0,
 assert(hanger_keyhole_slot_w < hanger_keyhole_round_d,
        "keyhole slot must be narrower than the round drop-in opening or the nail head would fall through the slot.");
 
+// Socket thru-hole must be coaxial with the top side-rail ears (A, D).
+// If this fires, the service-port screwdriver access is broken.
+_hanger_sock_center = [hanger_pin_axis_x, hanger_pin_axis_y];
+_top_side_ear       = [side_insert_x, 30];
+assert(_hanger_sock_center == _top_side_ear,
+       "Hanger socket center is not coaxial with the top side-rail ear.");
+
 $fn = 48;
 
 // ===== Derived =====
@@ -294,6 +301,7 @@ module left_rail() {
         _rail_body("left");
         _rail_ears("left");
         _corner_knuckles("left");
+        _hanger_socket_knuckle(-1);
     }
 }
 
@@ -645,6 +653,59 @@ module _corner_knuckle_poly(sx, sy, orient_y) {
                 [base_x + (tip_x - base_x) * frac, ay + w/2]
         ];
         polygon(concat(bot, top_rev));
+    }
+}
+
+// =====================================================================
+// Hanger socket knuckle — one per side rail, sits on the inner wall of
+// the rail. Same bell-curve silhouette as the corner knuckles. Socket
+// is a thru-hole along Z; the matching pin on the hanger bar enters
+// from -Z (back of frame). The knuckle is shifted forward (+Z) by
+// `hanger_bar_t` so its socket mouth sits exactly at the bar's front
+// face when the bar is flush with the rear of the frame.
+//
+// sx = -1 for left rail; the right-rail version is produced automatically
+// by the existing `right_rail() { mirror([1,0,0]) left_rail(); }` call.
+// =====================================================================
+module _hanger_socket_knuckle(sx) {
+    base_w = corner_knuckle_base_w;
+    tip_w  = corner_knuckle_tip_w;
+    kd     = corner_knuckle_depth;
+    kn_t   = corner_knuckle_t;
+
+    base_x = sx * inner_x;
+    tip_x  = sx * (inner_x - kd);
+    ax     = sx * hanger_pin_axis_x;
+    ay     = hanger_pin_axis_y;
+
+    z_bot  = -frame_depth + hanger_bar_t;
+    z_top  = z_bot + kn_t;
+
+    // Bell-curve polygon in X-Y, extruded in Z. Base on the rail's inner
+    // wall (centered on ay in Y, width tapering from base_w to tip_w as
+    // X moves from base_x to tip_x).
+    bot = [
+        for (i = [0 : ear_slices])
+            let(frac = i / ear_slices,
+                w    = tip_w + (base_w - tip_w) * (0.5 + 0.5 * cos(180 * frac)))
+            [base_x + (tip_x - base_x) * frac, ay - w/2]
+    ];
+    top_rev = [
+        for (i = [ear_slices : -1 : 0])
+            let(frac = i / ear_slices,
+                w    = tip_w + (base_w - tip_w) * (0.5 + 0.5 * cos(180 * frac)))
+            [base_x + (tip_x - base_x) * frac, ay + w/2]
+    ];
+
+    difference() {
+        translate([0, 0, z_bot])
+            linear_extrude(height = z_top - z_bot)
+                polygon(concat(bot, top_rev));
+        // Thru-hole socket along Z. Oversize by 0.1 top & bottom for clean
+        // boolean subtraction.
+        translate([ax, ay, z_bot - 0.1])
+            cylinder(d = corner_pin_d + 2 * corner_pin_tol,
+                     h = (z_top - z_bot) + 0.2);
     }
 }
 
