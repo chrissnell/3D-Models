@@ -3,6 +3,18 @@
 A catalog of my 3D-printable designs. Each entry below is auto-generated from
 the source `.scad` files.
 
+# Shared libraries
+
+Reusable OpenSCAD components live under `lib/` and are not treated as
+designs by the build. Pull one into your own design with `use <>`:
+
+- [`lib/knuckles.scad`](lib/knuckles.scad) — male/female bell-curve
+  "knuckle" protrusions for joining two printed parts. One carries an 8 mm
+  pin, the other a matching socket; glue goes in the socket. Exposes
+  `knuckle_male()`, `knuckle_female()`, `knuckle_profile()`, and
+  `knuckle_pin_tip_chamfer()`. Rendering the file standalone shows a demo
+  mated pair.
+
 # Designs
 
 <!-- designs:start -->

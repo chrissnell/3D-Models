@@ -19,7 +19,7 @@ LIST_PARTS := $(CURDIR)/scripts/list-parts.sh
 GEN_README := $(CURDIR)/scripts/gen-readme.sh
 PREVIEW_SIZE ?= 1200,900
 
-SCAD_FILES := $(shell find . -name '*.scad' -not -path '*/3mf/*' -not -path '*/.git/*' | sed 's|^\./||')
+SCAD_FILES := $(shell find . -name '*.scad' -not -path '*/3mf/*' -not -path '*/.git/*' -not -path './lib/*' | sed 's|^\./||')
 
 ALL_3MF :=
 ALL_PNG :=
