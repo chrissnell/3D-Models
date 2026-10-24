@@ -111,10 +111,17 @@ Add a single new module:
 module _hanger_socket_knuckle(sx) { ... }
 ```
 
-Called once from `left_rail()` (`sx = -1`) and once from `right_rail()`
-(`sx = +1`, via the existing `mirror([1,0,0]) left_rail()` call — so adding
-it to `left_rail()` is sufficient). Reuses the bell-curve polygon helper so
-the silhouette matches the corner knuckles exactly.
+Called once from `left_rail()` (`sx = -1`). The right rail gets the mirrored
+socket for free via the existing `right_rail() { mirror([1,0,0]) left_rail(); }`.
+Reuses the bell-curve polygon helper so the silhouette matches the corner
+knuckles exactly.
+
+**Side rails are HANDED.** Because the hanger socket sits only at `+Y`
+(not mirrored to `-Y`), a single printed side rail cannot be flipped to
+serve both sides — the socket would end up at the bottom corner instead
+of the top. The Customizer therefore exposes TWO printable parts,
+`side_rail_left` and `side_rail_right`, each rendered via `printable_rail`
+from its respective module. The user prints one of each.
 
 ## Part 2 — Hanger bar (new printable part `"hanger"`)
 
