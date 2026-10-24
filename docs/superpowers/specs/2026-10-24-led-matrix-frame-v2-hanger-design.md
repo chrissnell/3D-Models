@@ -124,10 +124,16 @@ Extend the Customizer dropdown and the `if (part == ...)` dispatch at the top
 of the file:
 
 ```openscad
-part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail, hanger, alignment]
+part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail, hanger]
 ...
 if (part == "hanger")        printable_hanger();
 ```
+
+Note: `alignment` is intentionally omitted from the Customizer dropdown
+because it is a 2D template (not exportable to 3MF) and would otherwise
+break `make`. The `if (part == "alignment") alignment_template();` dispatch
+line is retained so the template can still be generated via
+`openscad -o out.svg -D 'part="alignment"' ...` when needed.
 
 Also render the hanger in the assembled/exploded preview (`assembled_preview`)
 so a user opening the file in Customizer sees the full picture.
@@ -135,8 +141,9 @@ so a user opening the file in Customizer sees the full picture.
 ### Geometry (in installed position — same coord system as the rails)
 
 - Rectangular strap:
-  - X extent: `[-hanger_pin_axis_x, +hanger_pin_axis_x] = [-120, +120]`
-    → length `240 mm`.
+  - X extent: `[-inner_x, +inner_x] = [-128.3, +128.3]`
+    → length `inner_w ≈ 256.6 mm`. Bar is **flush with the inner faces of the
+    side rails** on both ends.
   - Y extent: centered on `+hanger_pin_axis_y`, width `hanger_bar_w`
     → `[+20, +40]`.
   - Z extent: `[-frame_depth, -frame_depth + hanger_bar_t] = [-49.25, -43.25]`.
@@ -144,17 +151,24 @@ so a user opening the file in Customizer sees the full picture.
   - Ø `corner_pin_d = 8 mm`, length `corner_pin_len = 6 mm`.
   - Base at bar's front face (`Z = -frame_depth + hanger_bar_t = -43.25`),
     projecting `+Z` into the cavity, ending at `Z = -37.25`.
-  - Axis at `(±hanger_pin_axis_x, +hanger_pin_axis_y)`.
+  - Axis at `(±hanger_pin_axis_x, +hanger_pin_axis_y) = (±120, +30)`. Pin
+    bases sit `~8.3 mm` inboard of the bar ends, so a full 8 mm Ø pin is
+    entirely supported by the bar material.
   - Tip chamfer: `hanger_pin_tip_chamfer = 0.5 mm` 45° break on the leading
     edge for easier socket entry.
-- Keyhole slot (cut all the way through in Z, centered on bar in X):
-  - Round opening: Ø `hanger_keyhole_round_d = 8 mm`, center at
-    `(0, +hanger_pin_axis_y)`.
-  - Narrow slot: `hanger_keyhole_slot_w = 4 mm` wide, extending UPWARD in Y
-    from the top of the round opening by `hanger_keyhole_slot_h = 10 mm`.
-  - Resulting shape: round hole with a slot rising from its top — nail head
-    enters through the round, frame slides down, nail shank catches in the
-    narrow slot.
+- **Teardrop keyhole** (cut all the way through in Z, centered on bar in X) —
+  formed by a 2D `hull()` of two circles:
+  - Wide (lower) lobe: Ø `hanger_keyhole_round_d = 8 mm`, center at
+    `(0, +hanger_pin_axis_y)`. Big enough for the nail head to drop through.
+  - Narrow (upper) lobe: Ø `hanger_keyhole_slot_w = 4 mm`, center at
+    `(0, +hanger_pin_axis_y + hanger_keyhole_slot_h) = (0, +40)`. Big enough
+    for the nail shank only.
+  - The hull produces a smooth tapered opening — wide at the bottom,
+    narrowing to a tip at the top.
+  - Hanging sequence: nail head drops into the wide lobe → frame weight pulls
+    frame down → nail rides up (relative to the bar) into the narrow lobe →
+    nail head is now behind the sub-head-sized region of the bar and cannot
+    pull back through → frame locked on nail.
 
 ### Install position vs. print position
 
@@ -162,7 +176,8 @@ so a user opening the file in Customizer sees the full picture.
   `Z = -frame_depth`), consistent with how the rails are modeled.
 - `printable_hanger()` rotates/translates for bed-friendly orientation:
   bar flat on the bed, pins pointing `+Z` on the printer. Footprint
-  `240 × 20 mm` fits the user's 256 × 256 bed with room to spare.
+  `~256.6 × 20 mm` is right at the edge of the user's 256 × 256 bed and
+  must be rotated ~15° diagonally on the plate to fit with clearance.
 
 ### Module organization
 
