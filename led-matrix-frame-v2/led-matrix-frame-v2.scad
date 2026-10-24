@@ -897,9 +897,30 @@ module _plus(arm, t) {
 // hanger-design.md
 // =====================================================================
 module printable_hanger() {
-    // STUB — replaced in Task 4. Visible placeholder cube.
-    color("orange")
-        cube([2 * hanger_pin_axis_x, hanger_bar_w, hanger_bar_t], center = true);
+    // Take the installed-position hanger, apply pin-tip chamfers, then
+    // flip for bed-friendly orientation. After the rotate+translate the
+    // bar sits with its (originally) rear face on the bed (Z=0) and the
+    // pins project upward in +Z on the printer.
+    translate([0, -hanger_pin_axis_y, frame_depth])
+        rotate([180, 0, 0])
+            difference() {
+                hanger();
+                // Chamfer each pin tip (45°, hanger_pin_tip_chamfer deep).
+                // The tip sits at Z = -frame_depth + hanger_bar_t + corner_pin_len.
+                pin_tip_z = -frame_depth + hanger_bar_t + corner_pin_len;
+                for (sx = [-1, 1])
+                    translate([sx * hanger_pin_axis_x,
+                               hanger_pin_axis_y,
+                               pin_tip_z - hanger_pin_tip_chamfer])
+                        difference() {
+                            cylinder(d = corner_pin_d + 1,
+                                     h = hanger_pin_tip_chamfer + 0.01);
+                            cylinder(d1 = corner_pin_d
+                                          - 2 * hanger_pin_tip_chamfer,
+                                     d2 = corner_pin_d,
+                                     h  = hanger_pin_tip_chamfer + 0.01);
+                        }
+            }
 }
 
 // =====================================================================
