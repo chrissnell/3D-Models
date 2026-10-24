@@ -926,37 +926,43 @@ module printable_hanger() {
 // =====================================================================
 // Hanger in installed position (same frame coords as the rails). Bar's
 // back face sits flush with the frame rear at Z=-frame_depth; pins
-// project forward (+Z) into the sockets. Used by assembled_preview()
-// for the `all` and `exploded` dropdown views.
+// project forward (+Z) into the sockets. Bar spans the full interior
+// width (inner_w) so it butts against the inside faces of the side
+// rails; the pin bases sit fully on the bar (not at its edge). Keyhole
+// is a teardrop (hull of two circles) — wide lobe for the nail head to
+// drop into, narrower lobe above where the shank catches as the frame
+// slides down.
+// Used by assembled_preview() for the `all` and `exploded` views.
 // =====================================================================
 module hanger() {
     bar_z_bot = -frame_depth;
     bar_z_top = bar_z_bot + hanger_bar_t;
     pin_z_bot = bar_z_top;
-    pin_z_top = pin_z_bot + corner_pin_len;
 
     difference() {
         union() {
-            // Flat strap: X=[-apx, +apx], Y centered on hanger_pin_axis_y,
+            // Flat strap: X spans the full interior width (flush with
+            // the side-rail inner faces); Y centered on hanger_pin_axis_y;
             // Z=[bar_z_bot, bar_z_top].
             translate([0, hanger_pin_axis_y, (bar_z_bot + bar_z_top) / 2])
-                cube([2 * hanger_pin_axis_x, hanger_bar_w,
-                      hanger_bar_t], center = true);
-            // Two pins projecting forward from bar's front face.
+                cube([inner_w, hanger_bar_w, hanger_bar_t], center = true);
+            // Two pins projecting forward from bar's front face. Pin
+            // bases sit inboard of the bar edge by (inner_x - hanger_pin_axis_x).
             for (sx = [-1, 1])
                 translate([sx * hanger_pin_axis_x, hanger_pin_axis_y, pin_z_bot])
                     cylinder(d = corner_pin_d, h = corner_pin_len);
         }
-        // Keyhole slot (through the bar in Z). Round hole + rectangular
-        // slot rising in +Y from the top of the round.
-        translate([0, hanger_pin_axis_y, bar_z_bot - 0.1])
-            cylinder(d = hanger_keyhole_round_d,
-                     h = hanger_bar_t + 0.2);
-        translate([0,
-                   hanger_pin_axis_y + hanger_keyhole_round_d/2
-                       + hanger_keyhole_slot_h/2,
-                   bar_z_bot - 0.1])
-            cube([hanger_keyhole_slot_w, hanger_keyhole_slot_h,
-                  hanger_bar_t + 0.2], center = true);
+        // Teardrop keyhole (through bar in Z): hull a wide circle (round
+        // lobe) at hanger_pin_axis_y with a narrower circle offset in +Y
+        // by hanger_keyhole_slot_h. Nail head drops into the wide lobe;
+        // frame slides down and the shank is captured in the narrow lobe.
+        translate([0, 0, bar_z_bot - 0.1])
+            linear_extrude(height = hanger_bar_t + 0.2)
+                hull() {
+                    translate([0, hanger_pin_axis_y])
+                        circle(d = hanger_keyhole_round_d);
+                    translate([0, hanger_pin_axis_y + hanger_keyhole_slot_h])
+                        circle(d = hanger_keyhole_slot_w);
+                }
     }
 }
