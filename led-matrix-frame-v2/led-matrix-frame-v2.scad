@@ -196,7 +196,7 @@ assert(hanger_keyhole_slot_w < hanger_keyhole_round_d,
 // Socket thru-hole must be coaxial with the top side-rail ears (A, D).
 // If this fires, the service-port screwdriver access is broken.
 _hanger_sock_center = [hanger_pin_axis_x, hanger_pin_axis_y];
-_top_side_ear       = [side_insert_x, 30];
+_top_side_ear       = [side_insert_x, left_inserts[0][1]];  // ear A/D Y, read from source
 assert(_hanger_sock_center == _top_side_ear,
        "Hanger socket center is not coaxial with the top side-rail ear.");
 
