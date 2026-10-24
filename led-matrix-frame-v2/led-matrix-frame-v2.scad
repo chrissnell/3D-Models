@@ -239,6 +239,7 @@ module assembled_preview(gap = 0) {
     translate([0, -gap, 0]) bottom_rail();
     translate([-gap, 0, 0]) left_rail();
     translate([ gap, 0, 0]) right_rail();
+    translate([0, 0, -gap]) hanger();
     // Ghost panel: face at Z=0, extends into -Z by panel_d.
     %translate([0, 0, -panel_d/2])
         cube([panel_w, panel_h, panel_d], center = true);
@@ -899,4 +900,42 @@ module printable_hanger() {
     // STUB — replaced in Task 4. Visible placeholder cube.
     color("orange")
         cube([2 * hanger_pin_axis_x, hanger_bar_w, hanger_bar_t], center = true);
+}
+
+// =====================================================================
+// Hanger in installed position (same frame coords as the rails). Bar's
+// back face sits flush with the frame rear at Z=-frame_depth; pins
+// project forward (+Z) into the sockets. Used by assembled_preview()
+// for the `all` and `exploded` dropdown views.
+// =====================================================================
+module hanger() {
+    bar_z_bot = -frame_depth;
+    bar_z_top = bar_z_bot + hanger_bar_t;
+    pin_z_bot = bar_z_top;
+    pin_z_top = pin_z_bot + corner_pin_len;
+
+    difference() {
+        union() {
+            // Flat strap: X=[-apx, +apx], Y centered on hanger_pin_axis_y,
+            // Z=[bar_z_bot, bar_z_top].
+            translate([0, hanger_pin_axis_y, (bar_z_bot + bar_z_top) / 2])
+                cube([2 * hanger_pin_axis_x, hanger_bar_w,
+                      hanger_bar_t], center = true);
+            // Two pins projecting forward from bar's front face.
+            for (sx = [-1, 1])
+                translate([sx * hanger_pin_axis_x, hanger_pin_axis_y, pin_z_bot])
+                    cylinder(d = corner_pin_d, h = corner_pin_len);
+        }
+        // Keyhole slot (through the bar in Z). Round hole + rectangular
+        // slot rising in +Y from the top of the round.
+        translate([0, hanger_pin_axis_y, bar_z_bot - 0.1])
+            cylinder(d = hanger_keyhole_round_d,
+                     h = hanger_bar_t + 0.2);
+        translate([0,
+                   hanger_pin_axis_y + hanger_keyhole_round_d/2
+                       + hanger_keyhole_slot_h/2,
+                   bar_z_bot - 0.1])
+            cube([hanger_keyhole_slot_w, hanger_keyhole_slot_h,
+                  hanger_bar_t + 0.2], center = true);
+    }
 }
