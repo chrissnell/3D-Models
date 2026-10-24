@@ -157,12 +157,14 @@ so a user opening the file in Customizer sees the full picture.
   - Tip chamfer: `hanger_pin_tip_chamfer = 0.5 mm` 45° break on the leading
     edge for easier socket entry.
 - **Teardrop keyhole** (cut all the way through in Z, centered on bar in X) —
-  formed by a 2D `hull()` of two circles:
-  - Wide (lower) lobe: Ø `hanger_keyhole_round_d = 8 mm`, center at
-    `(0, +hanger_pin_axis_y)`. Big enough for the nail head to drop through.
-  - Narrow (upper) lobe: Ø `hanger_keyhole_slot_w = 4 mm`, center at
-    `(0, +hanger_pin_axis_y + hanger_keyhole_slot_h) = (0, +40)`. Big enough
-    for the nail shank only.
+  formed by a 2D `hull()` of two circles. Sized small to retain material
+  around the opening (top of narrow lobe clears the bar's top edge by ~3.5 mm):
+  - Wide (lower) lobe: Ø `hanger_keyhole_round_d = 6 mm`, center at
+    `(0, +hanger_pin_axis_y) = (0, +30)`. Big enough for a small nail /
+    #6 wood-screw head to drop through.
+  - Narrow (upper) lobe: Ø `hanger_keyhole_slot_w = 3 mm`, center at
+    `(0, +hanger_pin_axis_y + hanger_keyhole_slot_h) = (0, +35)`. Big enough
+    for a nail shank or small screw shank.
   - The hull produces a smooth tapered opening — wide at the bottom,
     narrowing to a tip at the top.
   - Hanging sequence: nail head drops into the wide lobe → frame weight pulls
