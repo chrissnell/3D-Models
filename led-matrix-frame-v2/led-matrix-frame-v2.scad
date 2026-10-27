@@ -24,7 +24,7 @@ include <BOSL2/std.scad>
 // the rest are printable parts. The 2D alignment template is not in the
 // dropdown because it's not a 3D printable part - render it manually via
 // -D 'part="alignment"' when a fresh paper template is needed.
-part = "exploded"; // [all, exploded, top_rail, bottom_rail, side_rail_left, side_rail_right, hanger]
+part = "bottom_rail"; // [all, exploded, top_rail, bottom_rail, side_rail_left, side_rail_right, side_rail_right_controller, hanger]
 
 /* [Preview] */
 explode_gap = 20;   // mm to pull each rail outward in the exploded view
@@ -37,7 +37,7 @@ panel_tol = 0.3;    // extra clearance per side when seating in frame
 
 /* [Frame geometry] */
 wall           = 6;     // perimeter wall thickness around the panel
-rear_depth     = 35;    // depth behind the panel for the controller
+rear_depth     = 45;    // depth behind the panel for the controller
 front_lip      = 0;     // 0 = panel face flush with frame front (no bezel)
 corner_r       = 2;     // outer corner rounding of each rail
 front_chamfer  = 1.5;   // chamfer on the front outer edge
@@ -98,10 +98,10 @@ corner_knuckle_base_w    = 20;   // bell-curve width at the rail inner edge
 corner_knuckle_tip_w     = 12;   // bell-curve width at the knuckle tip
 corner_knuckle_depth     = 20;   // depth from inner edge to knuckle tip
 corner_pin_axis_depth    = 10;   // depth from inner edge to pin/socket axis
-// Z budget: 35 mm rear cavity, 4 knuckles * 6 mm = 24 mm consumed,
-// leaving 11 mm of air between tier 1 socket bottom and tier 2 pin knuckle
-// top. That 11 mm is the ASSEMBLY CLEARANCE - the socket rail can be
-// positioned up to 11 mm below its final Z and slid axially into
+// Z budget: 45 mm rear cavity, 4 knuckles * 6 mm = 24 mm consumed,
+// leaving 21 mm of air between tier 1 socket bottom and tier 2 pin knuckle
+// top. That 21 mm is the ASSEMBLY CLEARANCE - the socket rail can be
+// positioned up to 21 mm below its final Z and slid axially into
 // engagement without any knuckle-to-knuckle collision.
 
 /* [Matrix Portal S3 recess] */
@@ -132,9 +132,9 @@ portal_boss_od        = 10;
 // access window (model Z=-29). Portal body then sits across the window
 // so the USB-C port and switches are reachable through the opening.
 portal_boss_h         = 7;
-portal_insert_d       = 4.8;    // 0.2 mm smaller than a 5mm-OD M3 insert so
-                                // the knurls bite as the barrel heat-sets in
-portal_insert_depth   = 5;
+portal_insert_d       = 3.3;    // 0.2 mm smaller than a 3.5mm-OD M2.5 insert
+                                // so the knurls bite as the barrel heat-sets in
+portal_insert_depth   = 4;      // M2.5 x D3.5 x L4 heat-set insert
 portal_pad_t          = 6;
 // Pad -Y edge is flush with the frame's outer face. Pad +Y edge is
 // trimmed to the +Y edge of the upper bosses so it doesn't encroach on
@@ -174,6 +174,13 @@ hanger_bar_t            = 6;             // bar thickness in Z (drives socket Z 
 hanger_bar_w            = 20;            // bar width in Y
 
 hanger_pin_tip_chamfer  = 0.5;           // 45° break on pin tip for easier entry
+// Hanger pin diameter — oversized vs corner_pin_d so the hanger press-fits
+// into the already-printed side-rail sockets (socket Ø = corner_pin_d +
+// 2*corner_pin_tol = 8.6 mm). Nominal 8.3 mm leaves ~0.15 mm radial
+// nominal clearance → ~0 clearance after typical FDM printing (holes shrink,
+// pegs grow). Firm press-in, removable with pliers if needed. Bump down to
+// 8.2 if too tight on your printer, or up to 8.4 for a true interference fit.
+hanger_pin_d            = 8.3;
 
 // Teardrop keyhole: wide lower lobe (nail head drops in), narrow upper lobe
 // (nail shank catches as frame slides down). Sized small to keep plenty of
@@ -211,7 +218,7 @@ $fn = 48;
 // ===== Derived =====
 outer_w     = panel_w + 2 * wall;         // 268
 outer_h     = panel_h + 2 * wall;         // 140
-frame_depth = panel_d + rear_depth;       // 49.25 total depth in Z
+frame_depth = panel_d + rear_depth;       // 59.25 total depth in Z
 inner_w     = panel_w + 2 * panel_tol;    // tolerance-adjusted panel pocket
 inner_h     = panel_h + 2 * panel_tol;
 inner_x     = inner_w / 2;                // = +/- 128.3
@@ -233,6 +240,7 @@ if (part == "top_rail")      printable_rail("top");
 if (part == "bottom_rail")   printable_rail("bottom");
 if (part == "side_rail_left")  printable_rail("left");
 if (part == "side_rail_right") printable_rail("right");
+if (part == "side_rail_right_controller") printable_rail("right_controller");
 if (part == "hanger")        printable_hanger();
 if (part == "alignment")     alignment_template();
 
@@ -266,10 +274,11 @@ module printable_rail(which) {
     // flipped to serve as a right rail — the socket would end up at the
     // bottom corner instead of the top. Separate parts per side.
     rotate([180, 0, 0])
-        if (which == "top")         top_rail();
-        else if (which == "bottom") bottom_rail();
-        else if (which == "left")   left_rail();
-        else if (which == "right")  right_rail();
+        if (which == "top")                top_rail();
+        else if (which == "bottom")        bottom_rail();
+        else if (which == "left")          left_rail();
+        else if (which == "right")         right_rail();
+        else if (which == "right_controller") right_rail_with_controller();
 }
 
 // =====================================================================
@@ -321,6 +330,39 @@ module left_rail() {
 module right_rail() {
     // Mirror of left_rail about X=0.
     mirror([1, 0, 0]) left_rail();
+}
+
+// Side-exit variant of the right side rail: carries the Matrix Portal
+// mount so the USB cable exits through the +X outer wall instead of
+// through the bottom rail. Use when the frame sits on a desk (long axis
+// horizontal) and the cable needs to leave sideways.
+//
+// Portal orientation: long axis (63.5 mm) runs in X, perpendicular to the
+// right rail's long axis (Y). USB-C / RESET / UP / DOWN edge sits flush
+// against the +X outer wall; the access window cut through that wall
+// mirrors the bottom-rail version (same channel height, Z position).
+module right_rail_with_controller() {
+    difference() {
+        union() {
+            _rail_body("right");
+            _rail_ears("right");
+            _corner_knuckles("right");
+            _hanger_socket_knuckle(+1);
+            _portal_pad_right_side();
+        }
+        _portal_peripheral_cutouts_right_side();
+        _side_ear_screw_clearances_right();
+    }
+}
+
+// Air clearance through the Portal pad where it would otherwise cover
+// the right-rail D/E ears' M3 screw path. Mirrors _bottom_ear_screw_clearances
+// for the bottom-rail Portal mount.
+module _side_ear_screw_clearances_right() {
+    clear_d = ear_m3_clear + 1;
+    for (ins = right_inserts)
+        translate([ins[0], ins[1], -panel_d - ear_thickness - 1])
+            cylinder(d = clear_d, h = ear_thickness + panel_d + 2);
 }
 
 module _rail_body(which) {
@@ -544,7 +586,7 @@ module _ear_side_gussets_v(hy, base_x, sgn) {
 // the Z axis. Two tiers per corner: one just behind the panel plane,
 // one flush with the rear face.
 //
-// Z geometry (model coords; panel face at Z=0, rear face at Z=-49.25):
+// Z geometry (model coords; panel face at Z=0, rear face at Z=-59.25):
 //
 //   tier 1 pin knuckle    Z = -panel_d           to -panel_d - knuckle_t
 //   tier 1 socket knuckle Z = -panel_d - kn_t    to -panel_d - 2*kn_t
@@ -846,6 +888,182 @@ module _portal_peripheral_cutouts() {
 }
 
 // =====================================================================
+// Right-side-rail variant of the Portal mount. Same four-boss pad,
+// CONTROLLER label, pad-to-rail fillet, and USB access window as the
+// bottom-rail version, but reoriented so the pad hangs off the right
+// rail's inner wall (X=+inner_x) and the window cuts through the +X
+// outer wall. Portal long axis runs in X; USB edge is flush with +outer_x.
+//
+// The entire mount is shifted up in print Z (= -Z in model) and in
+// print -Y (= +Y in model) relative to the midpoint between the hanger
+// socket and the opposite corner knuckle, so the pad clears the lower
+// (-Y) D-ear's M3 screw hole. 3 mm is the maximum Z lift the Portal
+// clears before its component side pokes out the back of the frame.
+side_portal_y_shift = 9;   // mm, model +Y (= print -Y)
+side_portal_z_raise = 2;   // mm, model -Z (= print +Z)
+
+// Hole-pattern center in X: inboard of the +X outer wall by
+// (usb_edge_to_hole + long-hole-axis/2). hole_dy = 40.64 is the long
+// hole-pattern dimension, now running in X.
+function _portal_pad_right_side_hole_cx() =
+    outer_x - usb_edge_to_hole - portal_hole_dy / 2;
+
+// Pad centered in X between +outer_x (USB edge) and +outer_x - inset.
+function _portal_pad_right_side_center_x() =
+    outer_x - portal_pad_y_inset / 2;
+
+// Pad Y center starts at the midpoint between the hanger socket knuckle
+// (at +hanger_pin_axis_y) and the -Y corner knuckle on the opposite
+// end of the rail (pin axis at -(inner_y - corner_pin_axis_depth)),
+// then shifts +Y by side_portal_y_shift so the pad's -Y edge lifts off
+// the lower D-ear's screw hole.
+function _portal_pad_right_side_center_y() =
+    (hanger_pin_axis_y - (inner_y - corner_pin_axis_depth)) / 2
+    + side_portal_y_shift;
+
+// Z faces of the side-rail pad, lifted by side_portal_z_raise relative
+// to the bottom-rail Portal mount (so the ear's M3 screw path is clear
+// in Z as well as Y). Lifting is in -Z (model) = +Z (print).
+function _portal_pad_right_side_top_z() =
+    _portal_pad_top_z() - side_portal_z_raise;
+function _portal_pad_right_side_bot_z() =
+    _portal_pad_bot_z() - side_portal_z_raise;
+
+// Z center of the USB-C/switch access channel, tracking the lifted pad.
+function _side_access_channel_z() =
+    access_channel_z - side_portal_z_raise;
+
+// The Portal's hole pattern is NOT centered on the board — nearest holes
+// sit `pads_edge_to_hole` (16 mm) from the pads edge and ~8.6 mm from the
+// opposite edge, giving a 3.68 mm shift of the hole-pattern center away
+// from the pads edge. Mirrors the bottom-rail X offset but applied to Y
+// here, since the board's short axis runs in Y in the side-rail config.
+// Positive sign puts the pads edge on the -Y side of the pad.
+function _portal_pad_right_side_hole_cy() =
+    _portal_pad_right_side_center_y()
+    + (pads_edge_to_hole + portal_hole_dx/2 - portal_board_w/2);
+
+// Pad Y extent sized to cover both boss columns (hole_dx = 19.81) plus
+// one boss diameter and 5 mm margin per side.
+function _portal_pad_right_side_y_extent() =
+    portal_hole_dx + portal_boss_od + 10;
+
+module _portal_pad_right_side() {
+    pad_cx = _portal_pad_right_side_center_x();
+    pad_cy = _portal_pad_right_side_center_y();
+    pad_tz = _portal_pad_right_side_top_z();
+    pad_bz = _portal_pad_right_side_bot_z();
+    pad_cz = (pad_tz + pad_bz) / 2;
+    pad_x  = portal_pad_y_inset;
+    pad_y  = _portal_pad_right_side_y_extent();
+    difference() {
+        union() {
+            // Round only the two LEFT corners (toward panel center) —
+            // keep the two outer-wall-side corners sharp for maximum
+            // glue surface and fillet contact with the rail.
+            translate([pad_cx, pad_cy, pad_cz])
+                cuboid([pad_x, pad_y, portal_pad_t],
+                       rounding = 2,
+                       edges = [FRONT+LEFT, BACK+LEFT]);
+            _portal_pad_gusset_right_side(pad_bz);
+            _portal_pad_gusset_back_right_side(pad_tz);
+            _portal_bosses_right_side(pad_bz);
+        }
+        _portal_boss_pilots_right_side(pad_bz);
+        _portal_controller_label_right_side(pad_cx, pad_cy, pad_bz);
+    }
+}
+
+module _portal_pad_gusset_right_side(pad_bz) {
+    // Triangular-prism fillet along the pad-to-rail junction at X=+inner_x,
+    // extending in -Z (model) = +Z (print). This is the "front" gusset,
+    // on the boss side of the pad.
+    fillet = 4;
+    tiny = 0.1;
+    pad_cy = _portal_pad_right_side_center_y();
+    pad_y = _portal_pad_right_side_y_extent();
+    hull() {
+        translate([inner_x, pad_cy, pad_bz])
+            cube([tiny, pad_y, tiny], center = true);
+        translate([inner_x - fillet, pad_cy, pad_bz])
+            cube([tiny, pad_y, tiny], center = true);
+        translate([inner_x, pad_cy, pad_bz - fillet])
+            cube([tiny, pad_y, tiny], center = true);
+    }
+}
+
+// Minimal mirror of the front gusset on the panel (back) side of the
+// pad. Must stay small — this fillet grows in +Z (model) toward the
+// panel back at Z=-panel_d, so an oversized gusset would collide with
+// the LED panel seated at the frame front.
+module _portal_pad_gusset_back_right_side(pad_tz) {
+    fillet = 4;
+    tiny = 0.1;
+    pad_cy = _portal_pad_right_side_center_y();
+    pad_y = _portal_pad_right_side_y_extent();
+    hull() {
+        translate([inner_x, pad_cy, pad_tz])
+            cube([tiny, pad_y, tiny], center = true);
+        translate([inner_x - fillet, pad_cy, pad_tz])
+            cube([tiny, pad_y, tiny], center = true);
+        translate([inner_x, pad_cy, pad_tz + fillet])
+            cube([tiny, pad_y, tiny], center = true);
+    }
+}
+
+module _portal_bosses_right_side(pad_bz) {
+    hole_cx = _portal_pad_right_side_hole_cx();
+    hole_cy = _portal_pad_right_side_hole_cy();
+    for (sx = [-1, 1], sy = [-1, 1])
+        translate([hole_cx + sx * portal_hole_dy/2,
+                   hole_cy + sy * portal_hole_dx/2,
+                   pad_bz - portal_boss_h])
+            cylinder(d = portal_boss_od, h = portal_boss_h);
+}
+
+module _portal_boss_pilots_right_side(pad_bz) {
+    hole_cx = _portal_pad_right_side_hole_cx();
+    hole_cy = _portal_pad_right_side_hole_cy();
+    pilot_h = portal_boss_h + 2;
+    bottom_z = pad_bz - portal_boss_h - 0.1;
+    for (sx = [-1, 1], sy = [-1, 1])
+        translate([hole_cx + sx * portal_hole_dy/2,
+                   hole_cy + sy * portal_hole_dx/2,
+                   bottom_z])
+            cylinder(d = portal_insert_d, h = pilot_h + 0.1);
+}
+
+module _portal_controller_label_right_side(pad_cx, pad_cy, pad_bz) {
+    engrave_depth = 0.6;
+    text_size     = 4;
+    // Text runs along Y (parallel to the rail) and is mirrored in X so
+    // that after the printable_rail flip (rotate 180 about X), the
+    // engraving reads correctly from the Portal-mount side of the pad.
+    translate([pad_cx, pad_cy, pad_bz - 0.01])
+        linear_extrude(height = engrave_depth + 0.01)
+            rotate([0, 0, 90])
+                mirror([1, 0, 0])
+                    text("CONTROLLER", size = text_size,
+                         halign = "center", valign = "center",
+                         font = "Liberation Sans:style=Bold");
+}
+
+module _portal_peripheral_cutouts_right_side() {
+    // Access channel through the right rail's outer wall giving
+    // simultaneous access to the USB-C port and all three switches on
+    // the Portal's +X short edge. Y-centered on the pad so it aligns
+    // with the Portal's USB/switch edge.
+    pad_cy  = _portal_pad_right_side_center_y();
+    x_start = inner_x - 1;
+    x_end   = outer_x + 1;
+    x_mid   = (x_start + x_end) / 2;
+    x_span  = x_end - x_start;
+    translate([x_mid, pad_cy, _side_access_channel_z()])
+        cuboid([x_span, access_channel_w, access_channel_h],
+               rounding = 2, edges = "Y");
+}
+
+// =====================================================================
 // 2D alignment template. Print at 1:1 scale on paper and lay against the
 // back of the panel to verify insert positions line up with the ear holes.
 // Rendered as 2D (projection) so OpenSCAD exports SVG natively.
@@ -925,11 +1143,11 @@ module printable_hanger() {
                                hanger_pin_axis_y,
                                pin_tip_z - hanger_pin_tip_chamfer])
                         difference() {
-                            cylinder(d = corner_pin_d + 1,
+                            cylinder(d = hanger_pin_d + 1,
                                      h = hanger_pin_tip_chamfer + 0.01);
-                            cylinder(d1 = corner_pin_d
+                            cylinder(d1 = hanger_pin_d
                                           - 2 * hanger_pin_tip_chamfer,
-                                     d2 = corner_pin_d,
+                                     d2 = hanger_pin_d,
                                      h  = hanger_pin_tip_chamfer + 0.01);
                         }
             }
@@ -962,7 +1180,7 @@ module hanger() {
             // bases sit inboard of the bar edge by (inner_x - hanger_pin_axis_x).
             for (sx = [-1, 1])
                 translate([sx * hanger_pin_axis_x, hanger_pin_axis_y, pin_z_bot])
-                    cylinder(d = corner_pin_d, h = corner_pin_len);
+                    cylinder(d = hanger_pin_d, h = corner_pin_len);
         }
         // Teardrop keyhole (through bar in Z): hull a wide circle (round
         // lobe) at hanger_pin_axis_y with a narrower circle offset in +Y
