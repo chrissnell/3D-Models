@@ -10,7 +10,7 @@ include <BOSL2/threading.scad>
 
 /* [Part] */
 // all = assembled preview; base/lid are the printable parts.
-part = "all";   // [all, base, lid]
+part = "base";   // [all, base, lid]
 
 /* [Body] */
 body_d      = 104;   // knurled outer diameter of the body
