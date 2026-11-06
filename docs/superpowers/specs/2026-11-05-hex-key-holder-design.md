@@ -17,7 +17,11 @@ L-bracket in two slabs, printed as one piece:
 - **Shelf** (horizontal, cantilevers out from the backplate 30 mm up
   from the backplate's bottom edge — the 30 mm of backplate below the
   shelf is what the underside gussets anchor to)
-  - 220 × 40 × 5 mm
+  - 220 × 90 × 5 mm
+  - Shelf depth sized to accommodate T-handle arms oriented
+    perpendicular to the backplate (arms span equally on each side of
+    the hole center). Tweak the `shelf_depth` parameter if your set's
+    arms are longer or shorter than 90 mm.
   - Shelf attachment position: shelf underside at Z = 30 mm above the
     backplate bottom, shelf top at Z = 35 mm
   - 10 through-holes in a single row, 22 mm center-to-center, centered

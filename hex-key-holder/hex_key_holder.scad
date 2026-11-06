@@ -17,8 +17,8 @@ $fn = 96;
 
 // Default preview camera: front-right-above, framing the whole model.
 $vpr = [65, 0, 210];
-$vpt = [110, 20, 35];
-$vpd = 600;
+$vpt = [110, 50, 35];
+$vpd = 700;
 
 // ---------- Backplate ----------
 backplate_w       = 220;   // along X
@@ -27,7 +27,9 @@ backplate_h       = 70;    // along Z
 
 // ---------- Shelf ----------
 shelf_w           = 220;   // along X
-shelf_depth       = 40;    // along Y, extends from backplate front face (+Y)
+// Must be >= T-handle arm length so arms can sit perpendicular to the
+// backplate (arms span equal distance on each side of the hole center).
+shelf_depth       = 90;    // along Y, extends from backplate front face (+Y)
 shelf_t           = 5;     // along Z (shelf thickness)
 shelf_z           = 30;    // shelf underside sits at this Z (30 mm up from backplate bottom)
 
