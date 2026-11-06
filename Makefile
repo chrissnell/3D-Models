@@ -14,7 +14,7 @@
 #   make readme     — refresh README catalog block only
 #   make clean      — remove all generated 3MFs and previews
 
-OPENSCAD   ?= /Applications/OpenSCAD-2021.01.app/Contents/MacOS/OpenSCAD
+OPENSCAD   ?= /Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD
 LIST_PARTS := $(CURDIR)/scripts/list-parts.sh
 GEN_README := $(CURDIR)/scripts/gen-readme.sh
 PREVIEW_SIZE ?= 1200,900
