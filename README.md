@@ -38,12 +38,26 @@ designs by the build. Pull one into your own design with `use <>`:
 **Source:** [sd-slot-test.scad](gopro-battery-case/sd-slot-test.scad)
 **3MF:** [sd-slot-test](gopro-battery-case/3mf/sd-slot-test.3mf)
 
+## hex-key-holder
+
+![hex-key-holder/hex_key_holder](hex-key-holder/hex_key_holder.png)
+
+**Source:** [hex_key_holder.scad](hex-key-holder/hex_key_holder.scad)
+**3MF:** [hex_key_holder](hex-key-holder/3mf/hex_key_holder.3mf)
+
 ## led-matrix-frame-v2
 
 ![led-matrix-frame-v2/led-matrix-frame-v2](led-matrix-frame-v2/led-matrix-frame-v2.png)
 
 **Source:** [led-matrix-frame-v2.scad](led-matrix-frame-v2/led-matrix-frame-v2.scad)
-**3MF:** [exploded](led-matrix-frame-v2/3mf/led-matrix-frame-v2-exploded.3mf) · [top_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-top_rail.3mf) · [bottom_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-bottom_rail.3mf) · [side_rail_left](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail_left.3mf) · [side_rail_right](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail_right.3mf) · [hanger](led-matrix-frame-v2/3mf/led-matrix-frame-v2-hanger.3mf)
+**3MF:** [exploded](led-matrix-frame-v2/3mf/led-matrix-frame-v2-exploded.3mf) · [top_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-top_rail.3mf) · [bottom_rail](led-matrix-frame-v2/3mf/led-matrix-frame-v2-bottom_rail.3mf) · [side_rail_left](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail_left.3mf) · [side_rail_right](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail_right.3mf) · [side_rail_right_controller](led-matrix-frame-v2/3mf/led-matrix-frame-v2-side_rail_right_controller.3mf) · [hanger](led-matrix-frame-v2/3mf/led-matrix-frame-v2-hanger.3mf)
+
+## lib
+
+![lib/knuckles](lib/knuckles.png)
+
+**Source:** [knuckles.scad](lib/knuckles.scad)
+**3MF:** [knuckles](lib/3mf/knuckles.3mf)
 
 ## marbles-container
 
