@@ -81,8 +81,44 @@ module backplate() {
     }
 }
 
+// Shelf extends forward from the backplate at Z = shelf_z.
+// Modelled from the origin in "in use" coordinates:
+//   X : 0 .. shelf_w
+//   Y : backplate_t .. backplate_t + shelf_depth
+//   Z : shelf_z .. shelf_z + shelf_t
+module shelf() {
+    translate([0, backplate_t, shelf_z])
+        difference() {
+            cube([shelf_w, shelf_depth, shelf_t]);
+
+            // Through-holes (vertical, -Z to +Z through the shelf).
+            for (i = [0 : hole_count - 1]) {
+                x = hole_margin + i * hole_spacing;
+                d = (i < small_hole_count) ? hole_dia_small : hole_dia_large;
+                translate([x, hole_center_y_off, -0.01])
+                    cylinder(h = shelf_t + 0.02, d = d);
+            }
+
+            // Labels engraved on the shelf top face, on the backplate
+            // side of each hole (toward the cabinet, -Y from hole center).
+            for (i = [0 : hole_count - 1]) {
+                x = hole_margin + i * hole_spacing;
+                translate([x,
+                           hole_center_y_off + label_y_offset,
+                           shelf_t - label_depth])
+                    linear_extrude(height = label_depth + 0.01)
+                        text(key_labels[i],
+                             size = label_size,
+                             font = label_font,
+                             halign = "center",
+                             valign = "center");
+            }
+        }
+}
+
 module hex_key_holder() {
     backplate();
+    shelf();
 }
 
 hex_key_holder();
