@@ -16,6 +16,11 @@ include <BOSL2/std.scad>
 $fn = 96;
 
 // Default preview camera: front-right-above, framing the whole model.
+// NB: OpenSCAD's $vpr Z=210 rotation is what puts the camera on the
+// +Y (user-facing) side of the model, but it also flips +X to the
+// viewer's left in the preview — so engraved labels appear mirrored
+// *in the thumbnail*. The actual printed part reads correctly when
+// mounted on the wall (model +X = user's right).
 $vpr = [65, 0, 210];
 $vpt = [110, 50, 35];
 $vpd = 700;
@@ -46,8 +51,10 @@ small_hole_count  = 5;
 // ---------- Labels ----------
 label_depth       = 0.6;
 label_font        = "Inconsolata:style=Bold";
-label_size        = 5;
-label_y_offset    = -10;  // relative to hole center (toward the backplate, -Y)
+label_size        = 6;
+label_z           = 62;   // vertical center on backplate front face —
+                          // above the shelf (Z=35) and clear of a 19 mm
+                          // T-handle grip resting on the shelf (top Z=54)
 
 // ---------- Magnets ----------
 magnet_od         = 15;
@@ -66,6 +73,10 @@ gusset_t          = 4;     // along X (thickness)
 // hole centers at X = 11, 33, 55, 77, 99, 121, 143, 165, 187, 209.
 gusset_x_centers  = [44, 88, 132, 176];
 
+// ---------- Shelf fillet ----------
+shelf_fillet_r    = 2;     // round all exposed shelf edges so corners don't scratch
+                           // (max 2.5 = shelf_t/2, keep some margin)
+
 // ---------- Entry point ----------
 
 // Backplate stands vertical in use. Modelled from the origin:
@@ -77,13 +88,25 @@ module backplate() {
         cube([backplate_w, backplate_t, backplate_h]);
 
         // Two magnet pockets on the back face (Y=0), opening into -Y.
-        // Oriented so the cylinder axis points in -Y: rotate [-90, 0, 0]
-        // puts a +Z cylinder along -Y. Start slightly into the solid
-        // (+0.01) to avoid a zero-thickness face.
         for (x = [magnet_edge_inset, backplate_w - magnet_edge_inset]) {
             translate([x, 0.01, magnet_z])
                 rotate([90, 0, 0])
                     cylinder(h = magnet_pocket_d + 0.02, d = magnet_pocket_od);
+        }
+
+        // Engraved size labels on the +Y (user-facing) face, above each
+        // hole column. Default left-to-right text layout is correct for
+        // physical use: the user's right-hand side maps to model +X.
+        for (i = [0 : hole_count - 1]) {
+            x = hole_margin + i * hole_spacing;
+            translate([x, backplate_t + 0.01, label_z])
+                rotate([90, 0, 0])
+                    linear_extrude(height = label_depth + 0.01)
+                        text(key_labels[i],
+                             size = label_size,
+                             font = label_font,
+                             halign = "center",
+                             valign = "center");
         }
     }
 }
@@ -94,33 +117,27 @@ module backplate() {
 //   Y : backplate_t .. backplate_t + shelf_depth
 //   Z : shelf_z .. shelf_z + shelf_t
 module shelf() {
-    translate([0, backplate_t, shelf_z])
-        difference() {
-            cube([shelf_w, shelf_depth, shelf_t]);
+    r = shelf_fillet_r;
+    difference() {
+        // Shelf cuboid is extended `r` mm backward into the backplate
+        // so the rounded back edges get absorbed by the union() — only
+        // the exposed edges (top, front, sides, bottom-front) carry the
+        // fillet.
+        translate([0, backplate_t - r, shelf_z])
+            cuboid([shelf_w, shelf_depth + r, shelf_t],
+                   rounding = r,
+                   anchor = LEFT + FRONT + BOT);
 
-            // Through-holes (vertical, -Z to +Z through the shelf).
-            for (i = [0 : hole_count - 1]) {
-                x = hole_margin + i * hole_spacing;
-                d = (i < small_hole_count) ? hole_dia_small : hole_dia_large;
-                translate([x, hole_center_y_off, -0.01])
-                    cylinder(h = shelf_t + 0.02, d = d);
-            }
-
-            // Labels engraved on the shelf top face, on the backplate
-            // side of each hole (toward the cabinet, -Y from hole center).
-            for (i = [0 : hole_count - 1]) {
-                x = hole_margin + i * hole_spacing;
-                translate([x,
-                           hole_center_y_off + label_y_offset,
-                           shelf_t - label_depth])
-                    linear_extrude(height = label_depth + 0.01)
-                        text(key_labels[i],
-                             size = label_size,
-                             font = label_font,
-                             halign = "center",
-                             valign = "center");
-            }
+        // Through-holes (vertical).
+        for (i = [0 : hole_count - 1]) {
+            x = hole_margin + i * hole_spacing;
+            d = (i < small_hole_count) ? hole_dia_small : hole_dia_large;
+            translate([x,
+                       backplate_t + hole_center_y_off,
+                       shelf_z - 0.01])
+                cylinder(h = shelf_t + 0.02, d = d);
         }
+    }
 }
 
 // One triangular rib. The triangle lives in the YZ plane and is
