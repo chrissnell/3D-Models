@@ -12,10 +12,14 @@ L-bracket in two slabs, printed as one piece:
 - **Backplate** (against the cabinet wall)
   - 220 × 70 × 5 mm
   - Two cylindrical magnet pockets on the back face, Ø 14.85 × 3.3 mm
-    deep, centered vertically on the plate, 15 mm in from each short
-    edge
-- **Shelf** (horizontal, cantilevers out from bottom edge of backplate)
+    deep, 15 mm in from each short edge, at Z = 32.5 (aligned with the
+    shelf centerline for load transfer)
+- **Shelf** (horizontal, cantilevers out from the backplate 30 mm up
+  from the backplate's bottom edge — the 30 mm of backplate below the
+  shelf is what the underside gussets anchor to)
   - 220 × 40 × 5 mm
+  - Shelf attachment position: shelf underside at Z = 30 mm above the
+    backplate bottom, shelf top at Z = 35 mm
   - 10 through-holes in a single row, 22 mm center-to-center, centered
     on the shelf's 40 mm depth
   - Row spans X = 11 mm to X = 209 mm (11 mm margin each end, derived
@@ -38,13 +42,16 @@ L-bracket in two slabs, printed as one piece:
     backplate-side of each hole: "2", "2.5", "3", "4", "4.5", "5",
     "5.5", "6", "8", "10". Font: `Inconsolata:style=Bold` (matches
     existing designs in this repo).
-- **Gussets** (support the shelf under load)
-  - 4 triangular ribs on the underside of the shelf, running from the
-    shelf's front edge back to the backplate
-  - Each rib: 30 mm along the shelf, 30 mm down the backplate, 4 mm
-    thick
+- **Gussets** (support the shelf under load, hanging below it)
+  - 4 triangular ribs occupying the volume between the shelf underside
+    (Z = 30) and the backplate front face (Y = 5), extending 30 mm out
+    along the shelf and 30 mm down the backplate
+  - Each rib: 30 mm along shelf × 30 mm down backplate × 4 mm thick
   - Positioned between hole columns at X ≈ 44, 88, 132, 176 mm so no
-    rib sits directly under a hole
+    rib sits directly under a hole. Hex key shafts hang through the
+    holes and dangle between gussets — ribs are 4 mm thick in X,
+    clearance to nearest hole center is 11 mm, so shafts (max Ø 10 mm)
+    clear comfortably.
 
 ## Magnet retention
 
@@ -69,9 +76,10 @@ strong enough and much simpler.
 
 ## Print orientation
 
-Backplate lies flat on the bed, **back face down**. Shelf rises
-perpendicular to the bed as a 40 mm-tall wall along one long edge of
-the backplate. Gussets print as thin vertical ribs inside the L.
+Backplate lies flat on the bed, **back face down**. The L-bracket
+rotates so the shelf and gussets stand up as a wall perpendicular to
+the bed. Gussets print as thin vertical ribs behind the standing
+shelf.
 
 Build volume used: 220 × 70 × 45 mm. Fits comfortably on a Bambu X1C
 (256 × 256 × 256).
