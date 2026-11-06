@@ -15,6 +15,11 @@ include <BOSL2/std.scad>
 
 $fn = 96;
 
+// Default preview camera: front-right-above, framing the whole model.
+$vpr = [65, 0, 210];
+$vpt = [110, 20, 35];
+$vpd = 600;
+
 // ---------- Backplate ----------
 backplate_w       = 220;   // along X
 backplate_t       = 5;     // along Y (thickness, into +Y)
