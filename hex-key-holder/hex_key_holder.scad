@@ -61,8 +61,28 @@ gusset_x_centers  = [44, 88, 132, 176];
 
 // ---------- Entry point ----------
 
+// Backplate stands vertical in use. Modelled from the origin:
+//   X : 0 .. backplate_w
+//   Y : 0 .. backplate_t     (back face at Y=0 against the cabinet wall)
+//   Z : 0 .. backplate_h
+module backplate() {
+    difference() {
+        cube([backplate_w, backplate_t, backplate_h]);
+
+        // Two magnet pockets on the back face (Y=0), opening into -Y.
+        // Oriented so the cylinder axis points in -Y: rotate [-90, 0, 0]
+        // puts a +Z cylinder along -Y. Start slightly into the solid
+        // (+0.01) to avoid a zero-thickness face.
+        for (x = [magnet_edge_inset, backplate_w - magnet_edge_inset]) {
+            translate([x, 0.01, magnet_z])
+                rotate([90, 0, 0])
+                    cylinder(h = magnet_pocket_d + 0.02, d = magnet_pocket_od);
+        }
+    }
+}
+
 module hex_key_holder() {
-    // Filled in by later tasks.
+    backplate();
 }
 
 hex_key_holder();
