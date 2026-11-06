@@ -34,7 +34,7 @@ backplate_h       = 70;    // along Z
 shelf_w           = 220;   // along X
 // Must be >= T-handle arm length so arms can sit perpendicular to the
 // backplate (arms span equal distance on each side of the hole center).
-shelf_depth       = 90;    // along Y, extends from backplate front face (+Y)
+shelf_depth       = 70;    // along Y, extends from backplate front face (+Y)
 shelf_t           = 5;     // along Z (shelf thickness)
 shelf_z           = 30;    // shelf underside sits at this Z (30 mm up from backplate bottom)
 
@@ -42,7 +42,10 @@ shelf_z           = 30;    // shelf underside sits at this Z (30 mm up from back
 hole_count        = 10;
 hole_spacing      = 22;                                   // center-to-center
 hole_margin       = (shelf_w - (hole_count - 1) * hole_spacing) / 2; // 11 mm
-hole_center_y_off = shelf_depth / 2;                      // offset from backplate front face
+hole_front_margin = 10;                                    // shelf extent past the hole center
+hole_center_y_off = shelf_depth - hole_front_margin;       // offset from backplate front face
+                                                            // (must be >= 45 for 90 mm T-handle arms
+                                                            // to clear the backplate)
 hole_dia_small    = 8;                                    // keys 2 .. 4.5
 hole_dia_large    = 13;                                   // keys 5 .. 10
 key_labels        = ["2","2.5","3","4","4.5","5","5.5","6","8","10"];
