@@ -61,8 +61,19 @@ magnet_od         = 15;
 magnet_t          = 3;
 magnet_pocket_od  = magnet_od - 0.15;   // press-fit interference
 magnet_pocket_d   = magnet_t + 0.3;     // small over-depth for seating
-magnet_edge_inset = 15;                  // X distance from each short edge
-magnet_z          = shelf_z + shelf_t / 2;  // aligned with shelf centerline (Z = 32.5)
+magnet_edge_inset = 15;                 // distance from short edges (X) and
+                                        // from top/bottom edges (Z)
+
+// Magnet positions as [X, Z] pairs on the backplate's back face.
+// Two at the top corners carry the peel load (the heaviest moment on
+// a wall-mount shelf with load hanging off the front); one at the
+// bottom center resists the holder kicking out from the wall. Edit
+// this list to add/remove/reposition magnets.
+magnet_positions = [
+    [magnet_edge_inset,                 backplate_h - magnet_edge_inset],  // top-left
+    [backplate_w - magnet_edge_inset,   backplate_h - magnet_edge_inset],  // top-right
+    [backplate_w / 2,                   magnet_edge_inset],                // bottom-center
+];
 
 // ---------- Gussets ----------
 gusset_count      = 4;
@@ -87,26 +98,33 @@ module backplate() {
     difference() {
         cube([backplate_w, backplate_t, backplate_h]);
 
-        // Two magnet pockets on the back face (Y=0), opening into -Y.
-        for (x = [magnet_edge_inset, backplate_w - magnet_edge_inset]) {
-            translate([x, 0.01, magnet_z])
-                rotate([90, 0, 0])
+        // Press-fit magnet pockets on the back face. Cylinder is placed
+        // just outside the backplate (Y = -0.01) and extruded into +Y
+        // so the pocket cuts correctly into the back face to its full
+        // depth. rotate([-90,0,0]) orients the cylinder axis along +Y.
+        for (p = magnet_positions) {
+            translate([p[0], -0.01, p[1]])
+                rotate([-90, 0, 0])
                     cylinder(h = magnet_pocket_d + 0.02, d = magnet_pocket_od);
         }
 
         // Engraved size labels on the +Y (user-facing) face, above each
-        // hole column. Default left-to-right text layout is correct for
-        // physical use: the user's right-hand side maps to model +X.
+        // hole column. The 2D text is pre-mirrored in X: after
+        // linear_extrude + rotate([90,0,0]), the prism's user-visible
+        // face is its original -Z side (back of the extrusion), which
+        // naturally shows a horizontally mirrored glyph. Pre-mirroring
+        // cancels that, so the engraving reads normally from the front.
         for (i = [0 : hole_count - 1]) {
             x = hole_margin + i * hole_spacing;
             translate([x, backplate_t + 0.01, label_z])
                 rotate([90, 0, 0])
                     linear_extrude(height = label_depth + 0.01)
-                        text(key_labels[i],
-                             size = label_size,
-                             font = label_font,
-                             halign = "center",
-                             valign = "center");
+                        mirror([1, 0, 0])
+                            text(key_labels[i],
+                                 size = label_size,
+                                 font = label_font,
+                                 halign = "center",
+                                 valign = "center");
         }
     }
 }
