@@ -116,9 +116,44 @@ module shelf() {
         }
 }
 
+// One triangular rib. The triangle lives in the YZ plane and is
+// extruded along +X by gusset_t.
+//
+// In "in use" coordinates, the triangle corners are:
+//   A: (Y = backplate_t,             Z = shelf_z)              inside corner of L
+//   B: (Y = backplate_t + gusset_run,Z = shelf_z)              along shelf underside
+//   C: (Y = backplate_t,             Z = shelf_z - gusset_rise) down backplate front
+//
+// We build the triangle at the origin (in Y-Z), translate it into
+// place, and extrude in X. linear_extrude extrudes a 2D shape along
+// +Z, so we first build the triangle in a local 2D plane (using
+// (Y', Z') with origin at corner A), extrude along +Z (becoming the
+// gusset's +X direction after rotation), and then rotate [0, -90, 0]
+// to map the extrusion axis from +Z to +X, and translate into place.
+module gusset_one() {
+    translate([0, backplate_t, shelf_z])
+        rotate([0, -90, 0])
+            linear_extrude(height = gusset_t)
+                polygon(points = [
+                    [0,           0],              // A
+                    [0,           gusset_run],     // B (along +Y → along the shelf)
+                    [-gusset_rise, 0]              // C (down → -Z)
+                ]);
+}
+
+module gussets() {
+    for (xc = gusset_x_centers) {
+        // gusset_one() renders at X ∈ [-gusset_t, 0]. Shift by
+        // (xc + gusset_t/2) so the gusset ends up centered at xc
+        // with thickness gusset_t.
+        translate([xc + gusset_t / 2, 0, 0]) gusset_one();
+    }
+}
+
 module hex_key_holder() {
     backplate();
     shelf();
+    gussets();
 }
 
 hex_key_holder();
