@@ -42,14 +42,25 @@ shelf_z           = 30;    // shelf underside sits at this Z (30 mm up from back
 hole_count        = 10;
 hole_spacing      = 22;                                   // center-to-center
 hole_margin       = (shelf_w - (hole_count - 1) * hole_spacing) / 2; // 11 mm
-hole_front_margin = 10;                                    // shelf extent past the hole center
+hole_front_margin = 20;                                    // shelf extent past the hole center
 hole_center_y_off = shelf_depth - hole_front_margin;       // offset from backplate front face
                                                             // (must be >= 45 for 90 mm T-handle arms
                                                             // to clear the backplate)
-hole_dia_small    = 8;                                    // keys 2 .. 4.5
-hole_dia_large    = 13;                                   // keys 5 .. 10
 key_labels        = ["2","2.5","3","4","4.5","5","5.5","6","8","10"];
 small_hole_count  = 5;
+
+// Shaft-sized through-hole at the bottom of the well. Sized so the hex
+// key shaft drops through but the beveled grip bottom (10 / 15.5 mm)
+// catches on the shoulder where the well meets this hole.
+shaft_dia_small   = 6;     // keys 2 .. 4.5 (max shaft ~5 mm)
+shaft_dia_large   = 13;    // keys 5 .. 10  (max shaft ~12 mm on the 10 mm key)
+
+// Well (counterbore on shelf top) that cradles the T-handle grip. Grip
+// diameters per user: 13.5 mm (small keys), 19 mm (large). Add 0.5 mm
+// clearance per side so the handle drops in without binding.
+well_dia_small    = 14;
+well_dia_large    = 19.5;
+well_depth        = 3;     // depth of the counterbore from the shelf top
 
 // ---------- Labels ----------
 label_depth       = 0.6;
@@ -149,14 +160,27 @@ module shelf() {
                    rounding = r,
                    anchor = LEFT + FRONT + BOT);
 
-        // Through-holes (vertical).
+        // Each position gets a counterbore well on top (cradles the
+        // T-handle grip) and a shaft-sized through-hole below (lets the
+        // hex key stick out the bottom of the shelf). The shoulder where
+        // the two meet is what the beveled grip bottom rests on.
         for (i = [0 : hole_count - 1]) {
-            x = hole_margin + i * hole_spacing;
-            d = (i < small_hole_count) ? hole_dia_small : hole_dia_large;
+            x         = hole_margin + i * hole_spacing;
+            is_small  = i < small_hole_count;
+            shaft_dia = is_small ? shaft_dia_small : shaft_dia_large;
+            well_dia  = is_small ? well_dia_small  : well_dia_large;
+
+            // Counterbore well cut into the shelf top.
+            translate([x,
+                       backplate_t + hole_center_y_off,
+                       shelf_z + shelf_t - well_depth])
+                cylinder(h = well_depth + 0.01, d = well_dia);
+
+            // Shaft through-hole, full shelf thickness.
             translate([x,
                        backplate_t + hole_center_y_off,
                        shelf_z - 0.01])
-                cylinder(h = shelf_t + 0.02, d = d);
+                cylinder(h = shelf_t + 0.02, d = shaft_dia);
         }
     }
 }
