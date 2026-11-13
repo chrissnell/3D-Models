@@ -35,7 +35,9 @@ shelf_w           = 220;   // along X
 // Must be >= T-handle arm length so arms can sit perpendicular to the
 // backplate (arms span equal distance on each side of the hole center).
 shelf_depth       = 70;    // along Y, extends from backplate front face (+Y)
-shelf_t           = 5;     // along Z (shelf thickness)
+shelf_t           = 12;    // along Z (shelf thickness) — thick enough to
+                           // sink the counterbore well 10 mm deep and still
+                           // leave material for the shaft hole below
 shelf_z           = 30;    // shelf underside sits at this Z (30 mm up from backplate bottom)
 
 // ---------- Key holes ----------
@@ -60,15 +62,17 @@ shaft_dia_large   = 13;    // keys 5 .. 10  (max shaft ~12 mm on the 10 mm key)
 // clearance per side so the handle drops in without binding.
 well_dia_small    = 14;
 well_dia_large    = 19.5;
-well_depth        = 3;     // depth of the counterbore from the shelf top
+well_depth        = 10;    // depth of the counterbore from the shelf top —
+                           // must be < shelf_t (leaves shelf_t - well_depth
+                           // of shaft-hole material below)
 
 // ---------- Labels ----------
 label_depth       = 0.6;
 label_font        = "Inconsolata:style=Bold";
 label_size        = 6;
-label_z           = 62;   // vertical center on backplate front face —
-                          // above the shelf (Z=35) and clear of a 19 mm
-                          // T-handle grip resting on the shelf (top Z=54)
+label_z           = 65;   // vertical center on backplate front face — clear
+                          // of a 19 mm T-handle grip resting on the shelf top
+                          // (shelf top = shelf_z + shelf_t = 42, grip top = 61)
 
 // ---------- Magnets ----------
 magnet_od         = 15;
