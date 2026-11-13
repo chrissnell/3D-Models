@@ -26,12 +26,12 @@ $vpt = [110, 50, 35];
 $vpd = 700;
 
 // ---------- Backplate ----------
-backplate_w       = 220;   // along X
+backplate_w       = 240;   // along X
 backplate_t       = 5;     // along Y (thickness, into +Y)
 backplate_h       = 70;    // along Z
 
 // ---------- Shelf ----------
-shelf_w           = 220;   // along X
+shelf_w           = 240;   // along X
 // Must be >= T-handle arm length so arms can sit perpendicular to the
 // backplate (arms span equal distance on each side of the hole center).
 shelf_depth       = 70;    // along Y, extends from backplate front face (+Y)
@@ -94,13 +94,14 @@ magnet_positions = [
 ];
 
 // ---------- Gussets ----------
-gusset_count      = 4;
+gusset_count      = 5;
 gusset_run        = 30;    // along +Y (how far out along the shelf)
 gusset_rise       = 30;    // along +Z (how far down the backplate)
 gusset_t          = 4;     // along X (thickness)
-// Midpoints between hole columns (between holes 2-3, 4-5, 6-7, 8-9);
-// hole centers at X = 11, 33, 55, 77, 99, 121, 143, 165, 187, 209.
-gusset_x_centers  = [44, 88, 132, 176];
+// Evenly spaced across the shelf width. Gussets live at Y ∈ [5, 35]
+// (under the back of the shelf), so they don't collide with the wells
+// or shaft holes up front at Y ≈ 55 — gussets can be placed at any X.
+gusset_x_centers  = [24, 72, 120, 168, 216];
 
 // ---------- Shelf fillet ----------
 shelf_fillet_r    = 2;     // round all exposed shelf edges so corners don't scratch
