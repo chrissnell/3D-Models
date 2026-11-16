@@ -199,9 +199,76 @@ module assembly() {
         color("LightGray") lid();
 }
 
+module alignment_2d() {
+    // 2D content, all in cavity-XY coords.
+    line_w = 0.3;      // visible stroke width on paper
+    dash_w = 0.3;
+    hairline = 0.2;
+
+    // Cavity outline — thin solid rectangle
+    translate([0, 0]) difference() {
+        square([cavity_x, cavity_y]);
+        translate([line_w, line_w])
+            square([cavity_x - 2*line_w, cavity_y - 2*line_w]);
+    }
+
+    // Board outline — dashed
+    translate([board_left_x, board_front_y]) {
+        dashes_x = floor(board_x / 4);
+        dashes_y = floor(board_y / 4);
+        // top and bottom edges
+        for (i = [0 : dashes_x - 1])
+            translate([i*4, 0]) square([2, dash_w]);
+        for (i = [0 : dashes_x - 1])
+            translate([i*4, board_y - dash_w]) square([2, dash_w]);
+        // left and right edges
+        for (i = [0 : dashes_y - 1])
+            translate([0, i*4]) square([dash_w, 2]);
+        for (i = [0 : dashes_y - 1])
+            translate([board_x - dash_w, i*4]) square([dash_w, 2]);
+    }
+
+    // Post footprints (8 mm OD rings) + crosshairs
+    for (p = post_positions()) {
+        translate(p) difference() {
+            circle(d = post_od);
+            circle(d = post_od - 2*line_w);
+        }
+        translate(p) square([post_od + 4, line_w], center = true);
+        translate(p) square([line_w, post_od + 4], center = true);
+    }
+
+    // Corner-boss footprints (11 mm OD rings, thin "ref" lines)
+    for (p = boss_positions())
+        translate(p) difference() {
+            circle(d = boss_od);
+            circle(d = boss_od - 2*hairline);
+        }
+
+    // 10 mm calibration square — solid outlined square in the lower-left
+    // corner of the cavity frame, inside the cavity so it's always on the sheet.
+    translate([5, 5]) difference() {
+        square([cal_square_mm, cal_square_mm]);
+        translate([line_w, line_w])
+            square([cal_square_mm - 2*line_w, cal_square_mm - 2*line_w]);
+    }
+
+    // Labels — text() outputs filled glyphs, exported as paths by OpenSCAD SVG.
+    translate([5, 5 + cal_square_mm + 2])
+        text("Print at 100% — square must measure 10 mm",
+             size = 3, font = "Liberation Sans");
+    translate([board_left_x, board_front_y - 5])
+        text(str("hole spacing: ", hole_spacing_x, " x ", hole_spacing_y, " mm"),
+             size = 3, font = "Liberation Sans");
+    translate([board_left_x, board_back_y + 2])
+        text(str("edge offsets: ", hole_edge_loose, " / ", hole_edge_tight,
+                 " mm long-axis, ", hole_edge_y, " mm short-axis"),
+             size = 3, font = "Liberation Sans");
+}
+
 // Dispatch — filled in by later tasks.
 if (part == "all") assembly();
 else if (part == "box") box();
 else if (part == "lid") lid();
 else if (part == "gasket") gasket();
-else if (part == "alignment-2d") {}
+else if (part == "alignment-2d") alignment_2d();
