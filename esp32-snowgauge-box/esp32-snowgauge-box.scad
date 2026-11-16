@@ -173,9 +173,25 @@ module lid() {
     }
 }
 
+module gasket() {
+    // Flat 3 mm ring matching the box flange outline (196 × 86) with a
+    // 180 × 70 cutout and four M4 clearance holes.
+    difference() {
+        translate([-wall_t, -wall_t, 0])
+            cube([exterior_x, exterior_y, gasket_t]);
+        // Cavity opening
+        translate([0, 0, -1])
+            cube([cavity_x, cavity_y, gasket_t + 2]);
+        // Four M4 clearance holes
+        for (p = boss_positions())
+            translate([p[0], p[1], -1])
+                cylinder(h = gasket_t + 2, d = m4_clear_d);
+    }
+}
+
 // Dispatch — filled in by later tasks.
 if (part == "all") {}
 else if (part == "box") box();
 else if (part == "lid") lid();
-else if (part == "gasket") {}
+else if (part == "gasket") gasket();
 else if (part == "alignment-2d") {}
