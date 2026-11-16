@@ -26,6 +26,13 @@ designs by the build. Pull one into your own design with `use <>`:
 **Source:** [can_cap.scad](dog-food-can-cap/can_cap.scad)
 **3MF:** [can_cap](dog-food-can-cap/3mf/can_cap.3mf)
 
+## esp32-snowgauge-box
+
+![esp32-snowgauge-box/esp32-snowgauge-box](esp32-snowgauge-box/esp32-snowgauge-box.png)
+
+**Source:** [esp32-snowgauge-box.scad](esp32-snowgauge-box/esp32-snowgauge-box.scad)
+**3MF:** [box](esp32-snowgauge-box/3mf/esp32-snowgauge-box-box.3mf) · [lid](esp32-snowgauge-box/3mf/esp32-snowgauge-box-lid.3mf) · [gasket](esp32-snowgauge-box/3mf/esp32-snowgauge-box-gasket.3mf) · [alignment-2d](esp32-snowgauge-box/3mf/esp32-snowgauge-box-alignment-2d.3mf)
+
 ## gopro-battery-case
 
 ![gopro-battery-case/gopro-battery-case](gopro-battery-case/gopro-battery-case.png)
@@ -59,12 +66,26 @@ designs by the build. Pull one into your own design with `use <>`:
 **Source:** [knuckles.scad](lib/knuckles.scad)
 **3MF:** [knuckles](lib/3mf/knuckles.3mf)
 
+## LilyGo-T-CAN485
+
+![LilyGo-T-CAN485/esp32-case](LilyGo-T-CAN485/esp32-case.png)
+
+**Source:** [esp32-case.scad](LilyGo-T-CAN485/esp32-case.scad)
+**3MF:** [esp32-case](LilyGo-T-CAN485/3mf/esp32-case.3mf)
+
 ## marbles-container
 
 ![marbles-container/marbles-container](marbles-container/marbles-container.png)
 
 **Source:** [marbles-container.scad](marbles-container/marbles-container.scad)
 **3MF:** [base](marbles-container/3mf/marbles-container-base.3mf) · [lid](marbles-container/3mf/marbles-container-lid.3mf) · [lid-text](marbles-container/3mf/marbles-container-lid-text.3mf)
+
+## moto-grip-sleeve
+
+![moto-grip-sleeve/moto-grip-sleeve](moto-grip-sleeve/moto-grip-sleeve.png)
+
+**Source:** [moto-grip-sleeve.scad](moto-grip-sleeve/moto-grip-sleeve.scad)
+**3MF:** [moto-grip-sleeve](moto-grip-sleeve/3mf/moto-grip-sleeve.3mf)
 
 ## superwinch-adapter-plate
 
