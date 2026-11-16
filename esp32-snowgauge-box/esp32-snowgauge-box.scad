@@ -199,15 +199,12 @@ module box() {
         translate([-wall_t - 1, cable_gland_y, cable_gland_z])
             rotate([0, 90, 0])
                 cylinder(h = wall_t + 2, d = cable_gland_d);
-        // Zip-tie channels: on the box bottom (top in use) and both long walls.
+        // Zip-tie channels: box long walls only. The ties wrap around the
+        // post + enclosure, meeting at the lid (ground-facing); they don't
+        // cross the box bottom (which is clamped against the post).
         for (xc = [tie_x_a, tie_x_b]) {
-            // Bottom face channel (runs across the box in Y)
-            translate([xc - tie_w/2, -wall_t, -floor_t - 0.01])
-                cube([tie_w, wall_ext_y, tie_d + 0.01]);
-            // Front long wall channel (runs up the wall in Z)
             translate([xc - tie_w/2, -wall_t - 0.01, -floor_t])
                 cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
-            // Back long wall channel
             translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -floor_t])
                 cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
         }
