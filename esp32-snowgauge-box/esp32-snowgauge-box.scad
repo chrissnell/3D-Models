@@ -141,9 +141,41 @@ module box() {
     }
 }
 
+module lid() {
+    // Lid is modelled top-up: flat plate 6 mm thick, drip-edge lip hanging
+    // down from the perimeter of the underside. XY frame is cavity-origin
+    // (same as the box) so corner-boss positions match.
+    lid_x = exterior_x + 2*lid_overhang;
+    lid_y = exterior_y + 2*lid_overhang;
+
+    difference() {
+        union() {
+            // Flat plate
+            translate([-wall_t - lid_overhang, -wall_t - lid_overhang, 0])
+                cube([lid_x, lid_y, lid_t]);
+            // Drip-edge lip: rectangular ring hanging below the plate
+            translate([-wall_t - lid_overhang, -wall_t - lid_overhang, -drip_lip_h])
+                difference() {
+                    cube([lid_x, lid_y, drip_lip_h]);
+                    translate([drip_lip_t, drip_lip_t, -1])
+                        cube([lid_x - 2*drip_lip_t,
+                              lid_y - 2*drip_lip_t,
+                              drip_lip_h + 2]);
+                }
+        }
+        // M4 clearance holes + counterbores at the four corner-boss centres.
+        for (p = boss_positions()) {
+            translate([p[0], p[1], -drip_lip_h - 1])
+                cylinder(h = drip_lip_h + lid_t + 2, d = m4_clear_d);
+            translate([p[0], p[1], lid_t - m4_head_depth])
+                cylinder(h = m4_head_depth + 1, d = m4_head_d);
+        }
+    }
+}
+
 // Dispatch — filled in by later tasks.
 if (part == "all") {}
 else if (part == "box") box();
-else if (part == "lid") {}
+else if (part == "lid") lid();
 else if (part == "gasket") {}
 else if (part == "alignment-2d") {}
