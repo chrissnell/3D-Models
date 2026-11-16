@@ -4,7 +4,7 @@
 /* [Part] */
 // all = assembled preview; box/lid/gasket = printable 3D parts;
 // alignment-2d = 1:1 paper template exported to PDF.
-part = "all"; // [all, box, lid, gasket, alignment-2d]
+part = "box"; // [all, box, lid, gasket, alignment-2d]
 
 $fa = 2;
 $fs = 0.3;
@@ -142,6 +142,15 @@ module box() {
             // Interior corner pillars (M4 inserts at top)
             for (p = pillar_positions())
                 translate([p[0], p[1], 0]) corner_pillar();
+            // Fill the gap between each pillar and the two adjoining inner
+            // walls: a square block in the inside corner, pillar_od/2 on a
+            // side, flush with the pillar height.
+            for (p = pillar_positions()) {
+                fx = (p[0] < cavity_x/2) ? 0 : cavity_x - pillar_od/2;
+                fy = (p[1] < cavity_y/2) ? 0 : cavity_y - pillar_od/2;
+                translate([fx, fy, 0])
+                    cube([pillar_od/2, pillar_od/2, pillar_h]);
+            }
         }
         // M4 insert pockets as a final subtract so overlapping wall material
         // can't fill them in.
