@@ -56,13 +56,15 @@ m4_head_d       = 7.5;
 m4_head_depth   = 4.5;
 
 /* [Zip-tie mounting channels] */
-// Two ties strap the enclosure (and the 2" square post it sits against)
-// around its short axis. Each tie seats in channels cut into the box
-// bottom, both long walls, both lid long edges, and the lid top face.
-tie_w    = 7;      // tie width (channel width along X)
-tie_d    = 1.6;    // tie thickness (channel depth into the surface)
-tie_x_a  = 50;     // X of the first tie (clear of the sensor hole at X=15..41)
-tie_x_b  = 150;    // X of the second tie
+// Two ties strap the enclosure to a 2" square post. On the box long walls,
+// the channel is formed by raised rails bumped OUT from the wall so the wall
+// stays full thickness at the gasket contact plane. On the lid (which has no
+// gasket seal on those faces), the channel is cut in as usual.
+tie_w        = 7;      // tie width (channel width along X)
+tie_d        = 1.6;    // tie thickness (channel depth = rail height)
+tie_rail_w   = 2;      // width of each raised rail flanking the channel
+tie_x_a      = 50;     // X of the first tie (clear of the sensor hole at X=15..41)
+tie_x_b      = 150;    // X of the second tie
 
 /* [Gasket] */
 gasket_t = 3;
@@ -189,6 +191,15 @@ module box() {
                     linear_extrude(pillar_h)
                         scale([s[0], s[1]]) corner_pad_2d();
             }
+            // Zip-tie bosses: raised slabs on each long wall. Channel is cut
+            // out of these (below), leaving two rails flanking the tie path.
+            tie_boss_w = tie_w + 2*tie_rail_w;
+            for (xc = [tie_x_a, tie_x_b]) {
+                translate([xc - tie_boss_w/2, -wall_t - tie_d, -floor_t])
+                    cube([tie_boss_w, tie_d, cavity_z + floor_t]);
+                translate([xc - tie_boss_w/2, cavity_y + wall_t, -floor_t])
+                    cube([tie_boss_w, tie_d, cavity_z + floor_t]);
+            }
         }
         // M4 insert pockets as a final subtract so wall material can't fill
         // them in.
@@ -199,13 +210,13 @@ module box() {
         translate([-wall_t - 1, cable_gland_y, cable_gland_z])
             rotate([0, 90, 0])
                 cylinder(h = wall_t + 2, d = cable_gland_d);
-        // Zip-tie channels: box long walls only. The ties wrap around the
-        // post + enclosure, meeting at the lid (ground-facing); they don't
-        // cross the box bottom (which is clamped against the post).
+        // Zip-tie channels: cut out of the bumped-out bosses on each long
+        // wall, back to the original wall surface. Wall itself stays full
+        // thickness so the gasket seal area is undisturbed.
         for (xc = [tie_x_a, tie_x_b]) {
-            translate([xc - tie_w/2, -wall_t - 0.01, -floor_t])
+            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -floor_t])
                 cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
-            translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -floor_t])
+            translate([xc - tie_w/2, cavity_y + wall_t, -floor_t])
                 cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
         }
     }
