@@ -51,12 +51,18 @@ pad_fillet_r        =  6;    // cavity-facing corner radius
 pillar_insert_offset = 4;    // M4 insert centre offset from each wall (into the pad)
 
 /* [Lid] */
-lid_overhang    = 2;
-drip_lip_h      = 3;
-drip_lip_t      = 2;
 m4_clear_d      = 4.5;
 m4_head_d       = 7.5;
 m4_head_depth   = 4.5;
+
+/* [Zip-tie mounting channels] */
+// Two ties strap the enclosure (and the 2" square post it sits against)
+// around its short axis. Each tie seats in channels cut into the box
+// bottom, both long walls, both lid long edges, and the lid top face.
+tie_w    = 7;      // tie width (channel width along X)
+tie_d    = 1.6;    // tie thickness (channel depth into the surface)
+tie_x_a  = 50;     // X of the first tie (clear of the sensor hole at X=15..41)
+tie_x_b  = 150;    // X of the second tie
 
 /* [Gasket] */
 gasket_t = 3;
@@ -193,6 +199,18 @@ module box() {
         translate([-wall_t - 1, cable_gland_y, cable_gland_z])
             rotate([0, 90, 0])
                 cylinder(h = wall_t + 2, d = cable_gland_d);
+        // Zip-tie channels: on the box bottom (top in use) and both long walls.
+        for (xc = [tie_x_a, tie_x_b]) {
+            // Bottom face channel (runs across the box in Y)
+            translate([xc - tie_w/2, -wall_t, -floor_t - 0.01])
+                cube([tie_w, wall_ext_y, tie_d + 0.01]);
+            // Front long wall channel (runs up the wall in Z)
+            translate([xc - tie_w/2, -wall_t - 0.01, -floor_t])
+                cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
+            // Back long wall channel
+            translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -floor_t])
+                cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
+        }
     }
 }
 
@@ -209,36 +227,35 @@ module gasket() {
 }
 
 module lid() {
-    lid_x = wall_ext_x + 2*lid_overhang;
-    lid_y = wall_ext_y + 2*lid_overhang;
-    lid_min_x = -wall_t - lid_overhang;
-    lid_min_y = -wall_t - lid_overhang;
-
+    // Flat plate flush with the box exterior (no overhang, no drip edge).
     difference() {
-        union() {
-            translate([lid_min_x, lid_min_y, 0])
-                cube([lid_x, lid_y, lid_t]);
-            translate([lid_min_x, lid_min_y, -drip_lip_h])
-                difference() {
-                    cube([lid_x, lid_y, drip_lip_h]);
-                    translate([drip_lip_t, drip_lip_t, -1])
-                        cube([lid_x - 2*drip_lip_t,
-                              lid_y - 2*drip_lip_t,
-                              drip_lip_h + 2]);
-                }
-        }
+        translate([-wall_t, -wall_t, 0])
+            cube([wall_ext_x, wall_ext_y, lid_t]);
         // M4 clearance holes at pillar positions, counterbored on top face.
         for (p = pillar_positions()) {
-            translate([p[0], p[1], -drip_lip_h - 1])
-                cylinder(h = drip_lip_h + lid_t + 2, d = m4_clear_d);
+            translate([p[0], p[1], -1])
+                cylinder(h = lid_t + 2, d = m4_clear_d);
             translate([p[0], p[1], lid_t - m4_head_depth])
                 cylinder(h = m4_head_depth + 1, d = m4_head_d);
         }
         // Snow sensor pass-through at the back-left corner (away from board).
         translate([sensor_hole_offset,
                    cavity_y - sensor_hole_offset,
-                   -drip_lip_h - 1])
-            cylinder(h = drip_lip_h + lid_t + 2, d = sensor_hole_d);
+                   -1])
+            cylinder(h = lid_t + 2, d = sensor_hole_d);
+        // Zip-tie channels: on the top face (bottom in use) and on both
+        // long edges (front/back short-axis walls of the lid).
+        for (xc = [tie_x_a, tie_x_b]) {
+            // Top face channel (runs across the lid in Y)
+            translate([xc - tie_w/2, -wall_t, lid_t - tie_d])
+                cube([tie_w, wall_ext_y, tie_d + 1]);
+            // Front long-edge channel (runs through lid in Z, 1.6 mm into the wall)
+            translate([xc - tie_w/2, -wall_t - 0.01, -1])
+                cube([tie_w, tie_d + 0.01, lid_t + 2]);
+            // Back long-edge channel
+            translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -1])
+                cube([tie_w, tie_d + 0.01, lid_t + 2]);
+        }
     }
 }
 
