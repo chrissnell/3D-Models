@@ -189,8 +189,18 @@ module gasket() {
     }
 }
 
+module assembly() {
+    box();
+    // Gasket sits on the flange top (z = cavity_z).
+    translate([0, 0, cavity_z])
+        color("IndianRed") gasket();
+    // Lid sits on top of the gasket.
+    translate([0, 0, cavity_z + gasket_t])
+        color("LightGray") lid();
+}
+
 // Dispatch — filled in by later tasks.
-if (part == "all") {}
+if (part == "all") assembly();
 else if (part == "box") box();
 else if (part == "lid") lid();
 else if (part == "gasket") gasket();
