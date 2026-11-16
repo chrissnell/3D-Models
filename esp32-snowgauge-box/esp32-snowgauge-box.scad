@@ -121,19 +121,19 @@ module corner_boss(h) {
 module box() {
     intersection() {
         union() {
+            // Shell: brick with cavity carved out
             difference() {
-                union() {
-                    translate([-wall_t, -wall_t, -floor_t])
-                        cube([exterior_x, exterior_y, exterior_z]);
-                    for (p = post_positions())
-                        translate([p[0], p[1], 0]) mount_post();
-                    for (p = boss_positions())
-                        translate([p[0], p[1], -floor_t]) corner_boss(exterior_z);
-                }
+                translate([-wall_t, -wall_t, -floor_t])
+                    cube([exterior_x, exterior_y, exterior_z]);
                 translate([0, 0, 0])
                     cube([cavity_x, cavity_y, cavity_z + 1]);
             }
-            // (nothing extra in the union — placeholder for future ribs if needed)
+            // Mount posts sit on the cavity floor (added after cavity carve-out).
+            for (p = post_positions())
+                translate([p[0], p[1], 0]) mount_post();
+            // Corner bosses run full exterior height.
+            for (p = boss_positions())
+                translate([p[0], p[1], -floor_t]) corner_boss(exterior_z);
         }
         // Trim to exterior footprint so bosses don't bulge outside.
         translate([-wall_t, -wall_t, -floor_t - 1])
