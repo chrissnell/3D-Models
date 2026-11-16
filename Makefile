@@ -23,13 +23,25 @@ SCAD_FILES := $(shell find . -name '*.scad' -not -path '*/3mf/*' -not -path '*/.
 
 ALL_3MF :=
 ALL_PNG :=
+ALL_PDF :=
 
 .DEFAULT_GOAL := all
 
 # Multi-part design: one 3MF per declared part.
+# Parts named `alignment-2d` get routed through SVG → PDF instead of 3MF.
 # Args: $(1)=scad path, $(2)=space-separated parts list
 define multi_part_rules
-ALL_3MF += $(foreach p,$(2),$(dir $(1))3mf/$(basename $(notdir $(1)))-$(p).3mf)
+ALL_3MF += $(foreach p,$(filter-out alignment-2d,$(2)),$(dir $(1))3mf/$(basename $(notdir $(1)))-$(p).3mf)
+
+ifneq ($(filter alignment-2d,$(2)),)
+ALL_PDF += $(dir $(1))$(basename $(notdir $(1)))-alignment.pdf
+
+$(dir $(1))$(basename $(notdir $(1)))-alignment.pdf: $(1)
+	@mkdir -p $$(@D)
+	$$(OPENSCAD) -o $$(@:.pdf=.svg) -D 'part="alignment-2d"' $$<
+	$(CURDIR)/scripts/svg-to-pdf.sh $$(@:.pdf=.svg) $$@
+	@rm -f $$(@:.pdf=.svg)
+endif
 
 $(dir $(1))3mf/$(basename $(notdir $(1)))-%.3mf: $(1)
 	@mkdir -p $$(@D)
@@ -67,11 +79,11 @@ $(foreach scad,$(SCAD_FILES),$(eval $(call gen_rules,$(scad))))
 
 # Per-directory phony aliases: `make wire-mounts` builds 3MFs + preview for that dir.
 DESIGN_DIRS := $(sort $(patsubst %/,%,$(dir $(SCAD_FILES))))
-$(foreach d,$(DESIGN_DIRS),$(eval .PHONY: $(d))$(eval $(d): $(filter $(d)/%,$(ALL_3MF) $(ALL_PNG))))
+$(foreach d,$(DESIGN_DIRS),$(eval .PHONY: $(d))$(eval $(d): $(filter $(d)/%,$(ALL_3MF) $(ALL_PNG) $(ALL_PDF))))
 
 .PHONY: all list readme clean
 
-all: $(ALL_3MF) $(ALL_PNG) readme
+all: $(ALL_3MF) $(ALL_PNG) $(ALL_PDF) readme
 
 readme: $(ALL_PNG)
 	@$(GEN_README)
@@ -86,4 +98,4 @@ list:
 	done
 
 clean:
-	rm -f $(ALL_3MF) $(ALL_PNG)
+	rm -f $(ALL_3MF) $(ALL_PNG) $(ALL_PDF)
