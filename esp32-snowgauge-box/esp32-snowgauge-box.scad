@@ -19,11 +19,11 @@ hole_edge_loose = 9.5;
 hole_edge_y     = 7.5;
 
 /* [Cavity] */
-cavity_x        = 185;   // 12 (right gap) + 82.5 (board) + 90.5 (open cavity)
-cavity_y        =  85;
+cavity_x        = 190;   // 15 (right gap) + 82.5 (board) + 92.5 (open cavity)
+cavity_y        =  90;
 cavity_z        =  31;
-board_right_gap =  12;   // clearance from board right short-end to inner right wall (fits right-side pillar)
-board_y_gap     =  12;   // clearance from board long edges (fits Y-side pillars)
+board_right_gap =  15;   // clearance from board right short-end to inner right wall (fits right-side pad)
+board_y_gap     =  15;   // clearance from board long edges (fits Y-side pads)
 
 /* [Shell] */
 wall_t     = 8;
@@ -38,10 +38,17 @@ post_bore_h   = 6.0;
 post_chamfer  = 0.5;
 
 /* [Corner pillars — M4 heat-set] */
-pillar_od           = 11.0;
+pillar_od           = 11.0;   // nominal boss OD (only used for insert spacing checks)
 pillar_insert_d     = 5.7;
 pillar_insert_depth = 9.0;
 pillar_extension    = 3.0;   // height pillars project above wall top (must equal gasket_t)
+
+// Rounded-pad pillars: each pillar is a rectangular pad in the inside wall
+// corner with the cavity-facing corner filleted. The M4 insert pocket sits
+// in the solid near-wall region.
+pad_size            = 14;    // length along each wall from the inside corner
+pad_fillet_r        =  6;    // cavity-facing corner radius
+pillar_insert_offset = 4;    // M4 insert centre offset from each wall (into the pad)
 
 /* [Lid] */
 lid_overhang    = 2;
@@ -74,13 +81,23 @@ function post_positions() = [
     [board_right_x - hole_edge_tight - hole_spacing_x,   board_front_y + hole_edge_y]
 ];
 
-// Pillar centres sit inside the cavity, tangent to both inner wall surfaces
-// at each corner (center at pillar_od/2 from each inner wall).
+// M4 insert centres sit in the thick near-wall portion of each corner pad,
+// offset pillar_insert_offset from both inner wall surfaces.
 function pillar_positions() = [
-    [pillar_od/2,              pillar_od/2],
-    [cavity_x - pillar_od/2,   pillar_od/2],
-    [pillar_od/2,              cavity_y - pillar_od/2],
-    [cavity_x - pillar_od/2,   cavity_y - pillar_od/2]
+    [pillar_insert_offset,              pillar_insert_offset],
+    [cavity_x - pillar_insert_offset,   pillar_insert_offset],
+    [pillar_insert_offset,              cavity_y - pillar_insert_offset],
+    [cavity_x - pillar_insert_offset,   cavity_y - pillar_insert_offset]
+];
+
+// Signs mapping each corner (in pillar_positions order) to its direction of
+// pad extension from the inside wall corner into the cavity.
+function pad_signs() = [[ 1,  1], [-1,  1], [ 1, -1], [-1, -1]];
+function pad_corners() = [
+    [0, 0],
+    [cavity_x, 0],
+    [0, cavity_y],
+    [cavity_x, cavity_y]
 ];
 
 // --- Invariants ---
@@ -96,10 +113,14 @@ assert(wall_ext_x <= 256 && wall_ext_y <= 256,
     "box exterior must fit on the 256 mm bed");
 assert(pillar_extension == gasket_t,
     "pillar_extension must equal gasket_t so pillar tops sit flush with gasket top");
-assert(board_right_gap >= pillar_od + 1,
-    "board right edge collides with right-side pillars — increase board_right_gap");
-assert(board_y_gap >= pillar_od + 1,
-    "board long edges collide with Y-side pillars — increase board_y_gap");
+assert(board_right_gap >= pad_size + 1,
+    "board right edge collides with right-side corner pads — increase board_right_gap");
+assert(board_y_gap >= pad_size + 1,
+    "board long edges collide with Y-side corner pads — increase board_y_gap");
+assert(pad_fillet_r < pad_size,
+    "pad_fillet_r must be smaller than pad_size");
+assert(pillar_insert_offset + pillar_insert_d/2 + 1.5 <= pad_size,
+    "M4 pocket wall too thin — move pillar_insert_offset or grow pad_size");
 
 module mount_post() {
     difference() {
@@ -113,14 +134,15 @@ module mount_post() {
     }
 }
 
-module corner_pillar() {
-    // Pillar stands up from cavity floor, extends above wall top by
-    // pillar_extension so its top ends up flush with the gasket top.
-    pillar_h = cavity_z + pillar_extension;
-    difference() {
-        cylinder(h = pillar_h, d = pillar_od);
-        translate([0, 0, pillar_h - pillar_insert_depth])
-            cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
+// 2D rounded pad footprint, anchored at (0, 0) with the inside wall corner
+// there and the pad body extending +X +Y into the cavity. The cavity-facing
+// corner (at (pad_size, pad_size)) is filleted to pad_fillet_r.
+module corner_pad_2d() {
+    hull() {
+        square([pad_size,        0.01]);
+        square([    0.01,    pad_size]);
+        translate([pad_size - pad_fillet_r, pad_size - pad_fillet_r])
+            circle(r = pad_fillet_r);
     }
 }
 
@@ -139,21 +161,17 @@ module box() {
             // Mount posts (board standoffs)
             for (p = post_positions())
                 translate([p[0], p[1], 0]) mount_post();
-            // Interior corner pillars (M4 inserts at top)
-            for (p = pillar_positions())
-                translate([p[0], p[1], 0]) corner_pillar();
-            // Fill the gap between each pillar and the two adjoining inner
-            // walls: a square block in the inside corner, pillar_od/2 on a
-            // side, flush with the pillar height.
-            for (p = pillar_positions()) {
-                fx = (p[0] < cavity_x/2) ? 0 : cavity_x - pillar_od/2;
-                fy = (p[1] < cavity_y/2) ? 0 : cavity_y - pillar_od/2;
-                translate([fx, fy, 0])
-                    cube([pillar_od/2, pillar_od/2, pillar_h]);
+            // Four rounded corner pads — M4 inserts live at the top of these.
+            for (i = [0 : 3]) {
+                c = pad_corners()[i];
+                s = pad_signs()[i];
+                translate([c[0], c[1], 0])
+                    linear_extrude(pillar_h)
+                        scale([s[0], s[1]]) corner_pad_2d();
             }
         }
-        // M4 insert pockets as a final subtract so overlapping wall material
-        // can't fill them in.
+        // M4 insert pockets as a final subtract so wall material can't fill
+        // them in.
         for (p = pillar_positions())
             translate([p[0], p[1], pillar_h - pillar_insert_depth])
                 cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
@@ -247,14 +265,22 @@ module alignment_2d() {
         translate(p) square([line_w, post_od + 4], center = true);
     }
 
-    // Interior corner pillar footprints
+    // Rounded corner-pad footprints (outline only) + insert crosshairs
+    for (i = [0 : 3]) {
+        c = pad_corners()[i];
+        s = pad_signs()[i];
+        translate(c) scale([s[0], s[1]]) difference() {
+            corner_pad_2d();
+            offset(delta = -line_w) corner_pad_2d();
+        }
+    }
     for (p = pillar_positions()) {
         translate(p) difference() {
-            circle(d = pillar_od);
-            circle(d = pillar_od - 2*line_w);
+            circle(d = pillar_insert_d);
+            circle(d = pillar_insert_d - 2*line_w);
         }
-        translate(p) square([pillar_od + 3, line_w], center = true);
-        translate(p) square([line_w, pillar_od + 3], center = true);
+        translate(p) square([pillar_insert_d + 3, line_w], center = true);
+        translate(p) square([line_w, pillar_insert_d + 3], center = true);
     }
 
     // Calibration square
