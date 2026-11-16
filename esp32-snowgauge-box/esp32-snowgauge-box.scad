@@ -10,25 +10,25 @@ $fa = 2;
 $fs = 0.3;
 
 /* [Board] */
-board_x        = 82.5;   // long axis of the board
-board_y        = 60.0;   // short axis of the board
-hole_spacing_x = 65;     // long-axis centre-to-centre
-hole_spacing_y = 45;     // short-axis centre-to-centre
-hole_edge_tight = 7.5;   // tight-end: distance from short-edge to nearest hole
-hole_edge_loose = 9.5;   // loose-end: distance from other short-edge to nearest hole
-hole_edge_y     = 7.5;   // long-edge to nearest hole (symmetric)
+board_x        = 82.5;
+board_y        = 60.0;
+hole_spacing_x = 65;
+hole_spacing_y = 45;
+hole_edge_tight = 7.5;
+hole_edge_loose = 9.5;
+hole_edge_y     = 7.5;
 
 /* [Cavity] */
-cavity_x        = 180;   // internal X
-cavity_y        =  70;   // internal Y
-cavity_z        =  31;   // internal Z (post height + 25 mm headroom)
-board_right_gap =   4;   // clearance from board right short-end to inner right wall
-board_y_gap     =   5;   // clearance from board long edges to long inner walls
+cavity_x        = 185;   // 12 (right gap) + 82.5 (board) + 90.5 (open cavity)
+cavity_y        =  85;
+cavity_z        =  31;
+board_right_gap =  12;   // clearance from board right short-end to inner right wall (fits right-side pillar)
+board_y_gap     =  12;   // clearance from board long edges (fits Y-side pillars)
 
 /* [Shell] */
-wall_t     = 8;   // side wall thickness (doubles as gasket flange width)
-floor_t    = 5;   // floor thickness
-lid_t      = 6;   // lid thickness
+wall_t     = 8;
+floor_t    = 5;
+lid_t      = 6;
 
 /* [Mount posts — M3 heat-set] */
 post_od       = 8.0;
@@ -37,51 +37,50 @@ post_bore_d   = 4.2;
 post_bore_h   = 6.0;
 post_chamfer  = 0.5;
 
-/* [Corner bosses — M4 heat-set] */
-boss_od           = 11.0;
-boss_insert_d     = 5.7;
-boss_insert_depth = 9.0;
+/* [Corner pillars — M4 heat-set] */
+pillar_od           = 11.0;
+pillar_insert_d     = 5.7;
+pillar_insert_depth = 9.0;
+pillar_extension    = 3.0;   // height pillars project above wall top (must equal gasket_t)
 
 /* [Lid] */
-lid_overhang    = 2;    // XY oversize on every side vs. box exterior
-drip_lip_h      = 3;    // vertical height of the drip-edge lip
-drip_lip_t      = 2;    // thickness of the drip-edge lip
+lid_overhang    = 2;
+drip_lip_h      = 3;
+drip_lip_t      = 2;
 m4_clear_d      = 4.5;
-m4_head_d       = 7.5;  // counterbore diameter
-m4_head_depth   = 4.5;  // counterbore depth
+m4_head_d       = 7.5;
+m4_head_depth   = 4.5;
 
 /* [Gasket] */
 gasket_t = 3;
 
 /* [Alignment PDF] */
-cal_square_mm = 10;   // calibration-square edge length (must measure 10 mm on paper)
+cal_square_mm = 10;
 
 // --- Derived ---
-exterior_x = cavity_x + 2*wall_t;    // 196
-exterior_y = cavity_y + 2*wall_t;    // 86
-exterior_z = cavity_z + floor_t;     // 36
+wall_ext_x = cavity_x + 2*wall_t;    // 201
+wall_ext_y = cavity_y + 2*wall_t;    // 101
+exterior_z = cavity_z + floor_t;     // 36 (walls run floor bottom -> wall top)
 
-// Board is anchored so its right short-end is `board_right_gap` from inner right wall.
-// Board origin here = board's back-right corner in cavity coords.
-board_right_x = cavity_x - board_right_gap;        // right edge of board, cavity-X
-board_back_y  = cavity_y - board_y_gap;            // back edge of board, cavity-Y
-board_left_x  = board_right_x - board_x;           // left edge of board
-board_front_y = board_back_y  - board_y;           // front edge of board
+board_right_x = cavity_x - board_right_gap;
+board_back_y  = cavity_y - board_y_gap;
+board_left_x  = board_right_x - board_x;
+board_front_y = board_back_y  - board_y;
 
-// Hole positions in cavity-XY. Tight end (7.5 mm) faces +X (inner right wall).
 function post_positions() = [
-    [board_right_x - hole_edge_tight,                    board_back_y  - hole_edge_y],                 // P1 back-right
-    [board_right_x - hole_edge_tight,                    board_front_y + hole_edge_y],                 // P2 front-right
-    [board_right_x - hole_edge_tight - hole_spacing_x,   board_back_y  - hole_edge_y],                 // P3 back-left
-    [board_right_x - hole_edge_tight - hole_spacing_x,   board_front_y + hole_edge_y]                  // P4 front-left
+    [board_right_x - hole_edge_tight,                    board_back_y  - hole_edge_y],
+    [board_right_x - hole_edge_tight,                    board_front_y + hole_edge_y],
+    [board_right_x - hole_edge_tight - hole_spacing_x,   board_back_y  - hole_edge_y],
+    [board_right_x - hole_edge_tight - hole_spacing_x,   board_front_y + hole_edge_y]
 ];
 
-// Corner-boss centres in cavity-XY (centred in the 8 mm wall corner).
-function boss_positions() = [
-    [-wall_t/2,            -wall_t/2],
-    [ cavity_x + wall_t/2, -wall_t/2],
-    [-wall_t/2,             cavity_y + wall_t/2],
-    [ cavity_x + wall_t/2,  cavity_y + wall_t/2]
+// Pillar centres sit inside the cavity, tangent to both inner wall surfaces
+// at each corner (center at pillar_od/2 from each inner wall).
+function pillar_positions() = [
+    [pillar_od/2,              pillar_od/2],
+    [cavity_x - pillar_od/2,   pillar_od/2],
+    [pillar_od/2,              cavity_y - pillar_od/2],
+    [cavity_x - pillar_od/2,   cavity_y - pillar_od/2]
 ];
 
 // --- Invariants ---
@@ -93,15 +92,20 @@ assert(cavity_x >= board_x + board_right_gap + 90,
     "cavity_x must leave 90 mm cavity left of board plus right-side gap");
 assert(cavity_y >= board_y + 2*board_y_gap,
     "cavity_y must leave board_y_gap clearance on both long edges");
-assert(exterior_x <= 256 && exterior_y <= 256,
+assert(wall_ext_x <= 256 && wall_ext_y <= 256,
     "box exterior must fit on the 256 mm bed");
+assert(pillar_extension == gasket_t,
+    "pillar_extension must equal gasket_t so pillar tops sit flush with gasket top");
+assert(board_right_gap >= pillar_od + 1,
+    "board right edge collides with right-side pillars — increase board_right_gap");
+assert(board_y_gap >= pillar_od + 1,
+    "board long edges collide with Y-side pillars — increase board_y_gap");
 
 module mount_post() {
     difference() {
         cylinder(h = post_h, d = post_od);
         translate([0, 0, post_h - post_bore_h])
             cylinder(h = post_bore_h + 0.01, d = post_bore_d);
-        // small lead-in chamfer at the mouth of the bore
         translate([0, 0, post_h - post_chamfer])
             cylinder(h = post_chamfer + 0.01,
                      d1 = post_bore_d,
@@ -109,52 +113,67 @@ module mount_post() {
     }
 }
 
-module corner_boss(h) {
-    // Full-height corner pillar with an M4 insert pocket opening on top.
+module corner_pillar() {
+    // Pillar stands up from cavity floor, extends above wall top by
+    // pillar_extension so its top ends up flush with the gasket top.
+    pillar_h = cavity_z + pillar_extension;
     difference() {
-        cylinder(h = h, d = boss_od);
-        translate([0, 0, h - boss_insert_depth])
-            cylinder(h = boss_insert_depth + 0.01, d = boss_insert_d);
+        cylinder(h = pillar_h, d = pillar_od);
+        translate([0, 0, pillar_h - pillar_insert_depth])
+            cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
     }
 }
 
 module box() {
-    intersection() {
+    pillar_h = cavity_z + pillar_extension;
+
+    difference() {
         union() {
             // Shell: brick with cavity carved out
             difference() {
                 translate([-wall_t, -wall_t, -floor_t])
-                    cube([exterior_x, exterior_y, exterior_z]);
+                    cube([wall_ext_x, wall_ext_y, exterior_z]);
                 translate([0, 0, 0])
                     cube([cavity_x, cavity_y, cavity_z + 1]);
             }
-            // Mount posts sit on the cavity floor (added after cavity carve-out).
+            // Mount posts (board standoffs)
             for (p = post_positions())
                 translate([p[0], p[1], 0]) mount_post();
-            // Corner bosses run full exterior height.
-            for (p = boss_positions())
-                translate([p[0], p[1], -floor_t]) corner_boss(exterior_z);
+            // Interior corner pillars (M4 inserts at top)
+            for (p = pillar_positions())
+                translate([p[0], p[1], 0]) corner_pillar();
         }
-        // Trim to exterior footprint so bosses don't bulge outside.
-        translate([-wall_t, -wall_t, -floor_t - 1])
-            cube([exterior_x, exterior_y, exterior_z + 2]);
+        // M4 insert pockets as a final subtract so overlapping wall material
+        // can't fill them in.
+        for (p = pillar_positions())
+            translate([p[0], p[1], pillar_h - pillar_insert_depth])
+                cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
+    }
+}
+
+module gasket() {
+    // Simple rectangular ring: outer edge at wall exterior, inner cutout at
+    // cavity opening. No bolt holes — the four pillars project up through
+    // the open centre of the gasket, so the bolts never pierce it.
+    difference() {
+        translate([-wall_t, -wall_t, 0])
+            cube([wall_ext_x, wall_ext_y, gasket_t]);
+        translate([0, 0, -1])
+            cube([cavity_x, cavity_y, gasket_t + 2]);
     }
 }
 
 module lid() {
-    // Lid is modelled top-up: flat plate 6 mm thick, drip-edge lip hanging
-    // down from the perimeter of the underside. XY frame is cavity-origin
-    // (same as the box) so corner-boss positions match.
-    lid_x = exterior_x + 2*lid_overhang;
-    lid_y = exterior_y + 2*lid_overhang;
+    lid_x = wall_ext_x + 2*lid_overhang;
+    lid_y = wall_ext_y + 2*lid_overhang;
+    lid_min_x = -wall_t - lid_overhang;
+    lid_min_y = -wall_t - lid_overhang;
 
     difference() {
         union() {
-            // Flat plate
-            translate([-wall_t - lid_overhang, -wall_t - lid_overhang, 0])
+            translate([lid_min_x, lid_min_y, 0])
                 cube([lid_x, lid_y, lid_t]);
-            // Drip-edge lip: rectangular ring hanging below the plate
-            translate([-wall_t - lid_overhang, -wall_t - lid_overhang, -drip_lip_h])
+            translate([lid_min_x, lid_min_y, -drip_lip_h])
                 difference() {
                     cube([lid_x, lid_y, drip_lip_h]);
                     translate([drip_lip_t, drip_lip_t, -1])
@@ -163,8 +182,8 @@ module lid() {
                               drip_lip_h + 2]);
                 }
         }
-        // M4 clearance holes + counterbores at the four corner-boss centres.
-        for (p = boss_positions()) {
+        // M4 clearance holes at pillar positions, counterbored on top face.
+        for (p = pillar_positions()) {
             translate([p[0], p[1], -drip_lip_h - 1])
                 cylinder(h = drip_lip_h + lid_t + 2, d = m4_clear_d);
             translate([p[0], p[1], lid_t - m4_head_depth])
@@ -173,40 +192,23 @@ module lid() {
     }
 }
 
-module gasket() {
-    // Flat 3 mm ring matching the box flange outline (196 × 86) with a
-    // 180 × 70 cutout and four M4 clearance holes.
-    difference() {
-        translate([-wall_t, -wall_t, 0])
-            cube([exterior_x, exterior_y, gasket_t]);
-        // Cavity opening
-        translate([0, 0, -1])
-            cube([cavity_x, cavity_y, gasket_t + 2]);
-        // Four M4 clearance holes
-        for (p = boss_positions())
-            translate([p[0], p[1], -1])
-                cylinder(h = gasket_t + 2, d = m4_clear_d);
-    }
-}
-
 module assembly() {
     box();
-    // Gasket sits on the flange top (z = cavity_z).
+    // Gasket sits on wall top (z = cavity_z).
     translate([0, 0, cavity_z])
         color("IndianRed") gasket();
-    // Lid sits on top of the gasket.
+    // Lid sits on gasket top (z = cavity_z + gasket_t) — same plane as pillar tops.
     translate([0, 0, cavity_z + gasket_t])
         color("LightGray") lid();
 }
 
 module alignment_2d() {
-    // 2D content, all in cavity-XY coords.
-    line_w = 0.3;      // visible stroke width on paper
+    line_w = 0.3;
     dash_w = 0.3;
     hairline = 0.2;
 
-    // Cavity outline — thin solid rectangle
-    translate([0, 0]) difference() {
+    // Cavity outline
+    difference() {
         square([cavity_x, cavity_y]);
         translate([line_w, line_w])
             square([cavity_x - 2*line_w, cavity_y - 2*line_w]);
@@ -216,19 +218,17 @@ module alignment_2d() {
     translate([board_left_x, board_front_y]) {
         dashes_x = floor(board_x / 4);
         dashes_y = floor(board_y / 4);
-        // top and bottom edges
         for (i = [0 : dashes_x - 1])
             translate([i*4, 0]) square([2, dash_w]);
         for (i = [0 : dashes_x - 1])
             translate([i*4, board_y - dash_w]) square([2, dash_w]);
-        // left and right edges
         for (i = [0 : dashes_y - 1])
             translate([0, i*4]) square([dash_w, 2]);
         for (i = [0 : dashes_y - 1])
             translate([board_x - dash_w, i*4]) square([dash_w, 2]);
     }
 
-    // Post footprints (8 mm OD rings) + crosshairs
+    // Board mount-post footprints
     for (p = post_positions()) {
         translate(p) difference() {
             circle(d = post_od);
@@ -238,22 +238,23 @@ module alignment_2d() {
         translate(p) square([line_w, post_od + 4], center = true);
     }
 
-    // Corner-boss footprints (11 mm OD rings, thin "ref" lines)
-    for (p = boss_positions())
+    // Interior corner pillar footprints
+    for (p = pillar_positions()) {
         translate(p) difference() {
-            circle(d = boss_od);
-            circle(d = boss_od - 2*hairline);
+            circle(d = pillar_od);
+            circle(d = pillar_od - 2*line_w);
         }
+        translate(p) square([pillar_od + 3, line_w], center = true);
+        translate(p) square([line_w, pillar_od + 3], center = true);
+    }
 
-    // 10 mm calibration square — solid outlined square in the lower-left
-    // corner of the cavity frame, inside the cavity so it's always on the sheet.
+    // Calibration square
     translate([5, 5]) difference() {
         square([cal_square_mm, cal_square_mm]);
         translate([line_w, line_w])
             square([cal_square_mm - 2*line_w, cal_square_mm - 2*line_w]);
     }
 
-    // Labels — text() outputs filled glyphs, exported as paths by OpenSCAD SVG.
     translate([5, 5 + cal_square_mm + 2])
         text("Print at 100% — square must measure 10 mm",
              size = 3, font = "Liberation Sans");
@@ -266,9 +267,9 @@ module alignment_2d() {
              size = 3, font = "Liberation Sans");
 }
 
-// Dispatch — filled in by later tasks.
-if (part == "all") assembly();
-else if (part == "box") box();
-else if (part == "lid") lid();
-else if (part == "gasket") gasket();
+// Dispatch
+if      (part == "all")          assembly();
+else if (part == "box")          box();
+else if (part == "lid")          lid();
+else if (part == "gasket")       gasket();
 else if (part == "alignment-2d") alignment_2d();
