@@ -4,7 +4,7 @@
 /* [Part] */
 // all = assembled preview; box/lid/gasket = printable 3D parts;
 // alignment-2d = 1:1 paper template exported to PDF.
-part = "box"; // [all, box, lid, gasket, alignment-2d]
+part = "all"; // [all, box, lid, gasket, sensor-gasket, alignment-2d]
 
 $fa = 2;
 $fs = 0.3;
@@ -60,6 +60,20 @@ m4_head_depth   = 4.5;
 
 /* [Gasket] */
 gasket_t = 3;
+
+/* [Snow sensor penetration] */
+sensor_hole_d       = 26.35;   // lid clearance hole for the sensor body
+sensor_hole_offset  = 28;      // centre offset from the back-left corner (same on X and Y)
+
+/* [Sensor gasket — printable ring] */
+sensor_gasket_id = 26.25;
+sensor_gasket_od = 35.0;
+sensor_gasket_t  = 3.0;
+
+/* [Cable gland] */
+cable_gland_d = 12.5;
+cable_gland_y = 22;   // centre Y (from front wall) along the left short-edge wall
+cable_gland_z = 10;   // centre Z above cavity floor
 
 /* [Alignment PDF] */
 cal_square_mm = 10;
@@ -175,6 +189,10 @@ module box() {
         for (p = pillar_positions())
             translate([p[0], p[1], pillar_h - pillar_insert_depth])
                 cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
+        // Cable gland: horizontal hole through the left short-edge wall.
+        translate([-wall_t - 1, cable_gland_y, cable_gland_z])
+            rotate([0, 90, 0])
+                cylinder(h = wall_t + 2, d = cable_gland_d);
     }
 }
 
@@ -216,17 +234,36 @@ module lid() {
             translate([p[0], p[1], lid_t - m4_head_depth])
                 cylinder(h = m4_head_depth + 1, d = m4_head_d);
         }
+        // Snow sensor pass-through at the back-left corner (away from board).
+        translate([sensor_hole_offset,
+                   cavity_y - sensor_hole_offset,
+                   -drip_lip_h - 1])
+            cylinder(h = drip_lip_h + lid_t + 2, d = sensor_hole_d);
+    }
+}
+
+module sensor_gasket() {
+    // Flat round ring for sealing around the snow sensor at the lid face.
+    difference() {
+        cylinder(h = sensor_gasket_t, d = sensor_gasket_od);
+        translate([0, 0, -1])
+            cylinder(h = sensor_gasket_t + 2, d = sensor_gasket_id);
     }
 }
 
 module assembly() {
     box();
-    // Gasket sits on wall top (z = cavity_z).
+    // Main gasket sits on wall top (z = cavity_z).
     translate([0, 0, cavity_z])
         color("IndianRed") gasket();
     // Lid sits on gasket top (z = cavity_z + gasket_t) — same plane as pillar tops.
     translate([0, 0, cavity_z + gasket_t])
         color("LightGray") lid();
+    // Sensor gasket sits on top of the lid, concentric with the sensor hole.
+    translate([sensor_hole_offset,
+               cavity_y - sensor_hole_offset,
+               cavity_z + gasket_t + lid_t])
+        color("IndianRed") sensor_gasket();
 }
 
 module alignment_2d() {
@@ -306,5 +343,6 @@ module alignment_2d() {
 if      (part == "all")          assembly();
 else if (part == "box")          box();
 else if (part == "lid")          lid();
-else if (part == "gasket")       gasket();
-else if (part == "alignment-2d") alignment_2d();
+else if (part == "gasket")        gasket();
+else if (part == "sensor-gasket") sensor_gasket();
+else if (part == "alignment-2d")  alignment_2d();
