@@ -96,9 +96,54 @@ assert(cavity_y >= board_y + 2*board_y_gap,
 assert(exterior_x <= 256 && exterior_y <= 256,
     "box exterior must fit on the 256 mm bed");
 
+module mount_post() {
+    difference() {
+        cylinder(h = post_h, d = post_od);
+        translate([0, 0, post_h - post_bore_h])
+            cylinder(h = post_bore_h + 0.01, d = post_bore_d);
+        // small lead-in chamfer at the mouth of the bore
+        translate([0, 0, post_h - post_chamfer])
+            cylinder(h = post_chamfer + 0.01,
+                     d1 = post_bore_d,
+                     d2 = post_bore_d + 2*post_chamfer);
+    }
+}
+
+module corner_boss(h) {
+    // Full-height corner pillar with an M4 insert pocket opening on top.
+    difference() {
+        cylinder(h = h, d = boss_od);
+        translate([0, 0, h - boss_insert_depth])
+            cylinder(h = boss_insert_depth + 0.01, d = boss_insert_d);
+    }
+}
+
+module box() {
+    intersection() {
+        union() {
+            difference() {
+                union() {
+                    translate([-wall_t, -wall_t, -floor_t])
+                        cube([exterior_x, exterior_y, exterior_z]);
+                    for (p = post_positions())
+                        translate([p[0], p[1], 0]) mount_post();
+                    for (p = boss_positions())
+                        translate([p[0], p[1], -floor_t]) corner_boss(exterior_z);
+                }
+                translate([0, 0, 0])
+                    cube([cavity_x, cavity_y, cavity_z + 1]);
+            }
+            // (nothing extra in the union — placeholder for future ribs if needed)
+        }
+        // Trim to exterior footprint so bosses don't bulge outside.
+        translate([-wall_t, -wall_t, -floor_t - 1])
+            cube([exterior_x, exterior_y, exterior_z + 2]);
+    }
+}
+
 // Dispatch — filled in by later tasks.
 if (part == "all") {}
-else if (part == "box") {}
+else if (part == "box") box();
 else if (part == "lid") {}
 else if (part == "gasket") {}
 else if (part == "alignment-2d") {}
