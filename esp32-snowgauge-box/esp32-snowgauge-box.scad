@@ -4,7 +4,7 @@
 /* [Part] */
 // all = assembled preview; box/lid/gasket = printable 3D parts;
 // alignment-2d = 1:1 paper template exported to PDF.
-part = "all"; // [all, box, lid, gasket, sensor-gasket, alignment-2d]
+part = "lid"; // [all, box, lid, gasket, sensor-gasket, alignment-2d]
 
 $fa = 2;
 $fs = 0.3;
@@ -191,14 +191,16 @@ module box() {
                     linear_extrude(pillar_h)
                         scale([s[0], s[1]]) corner_pad_2d();
             }
-            // Zip-tie bosses: raised slabs on each long wall. Channel is cut
-            // out of these (below), leaving two rails flanking the tie path.
+            // Zip-tie bosses: raised slabs on each long wall. Extend up
+            // through the gasket Z-range so the channel meets the lid boss
+            // flush — no wall-top material appears above the channel.
             tie_boss_w = tie_w + 2*tie_rail_w;
+            boss_h    = cavity_z + floor_t + gasket_t;   // floor bottom to gasket top
             for (xc = [tie_x_a, tie_x_b]) {
                 translate([xc - tie_boss_w/2, -wall_t - tie_d, -floor_t])
-                    cube([tie_boss_w, tie_d, cavity_z + floor_t]);
+                    cube([tie_boss_w, tie_d, boss_h]);
                 translate([xc - tie_boss_w/2, cavity_y + wall_t, -floor_t])
-                    cube([tie_boss_w, tie_d, cavity_z + floor_t]);
+                    cube([tie_boss_w, tie_d, boss_h]);
             }
         }
         // M4 insert pockets as a final subtract so wall material can't fill
@@ -211,13 +213,13 @@ module box() {
             rotate([0, 90, 0])
                 cylinder(h = wall_t + 2, d = cable_gland_d);
         // Zip-tie channels: cut out of the bumped-out bosses on each long
-        // wall, back to the original wall surface. Wall itself stays full
-        // thickness so the gasket seal area is undisturbed.
+        // wall, back to the original wall surface. Cut spans the full boss
+        // height (floor bottom to gasket top) so the channel is open-ended.
         for (xc = [tie_x_a, tie_x_b]) {
-            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -floor_t])
-                cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
-            translate([xc - tie_w/2, cavity_y + wall_t, -floor_t])
-                cube([tie_w, tie_d + 0.01, cavity_z + floor_t]);
+            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -floor_t - 0.01])
+                cube([tie_w, tie_d + 0.01, cavity_z + floor_t + gasket_t + 0.02]);
+            translate([xc - tie_w/2, cavity_y + wall_t, -floor_t - 0.01])
+                cube([tie_w, tie_d + 0.01, cavity_z + floor_t + gasket_t + 0.02]);
         }
     }
 }
@@ -236,9 +238,20 @@ module gasket() {
 
 module lid() {
     // Flat plate flush with the box exterior (no overhang, no drip edge).
+    tie_boss_w = tie_w + 2*tie_rail_w;
     difference() {
-        translate([-wall_t, -wall_t, 0])
-            cube([wall_ext_x, wall_ext_y, lid_t]);
+        union() {
+            translate([-wall_t, -wall_t, 0])
+                cube([wall_ext_x, wall_ext_y, lid_t]);
+            // Zip-tie bosses on both long edges — match the box bosses so
+            // the channel is continuous from box bottom to lid top.
+            for (xc = [tie_x_a, tie_x_b]) {
+                translate([xc - tie_boss_w/2, -wall_t - tie_d, 0])
+                    cube([tie_boss_w, tie_d, lid_t]);
+                translate([xc - tie_boss_w/2, cavity_y + wall_t, 0])
+                    cube([tie_boss_w, tie_d, lid_t]);
+            }
+        }
         // M4 clearance holes at pillar positions, counterbored on top face.
         for (p = pillar_positions()) {
             translate([p[0], p[1], -1])
@@ -251,17 +264,17 @@ module lid() {
                    cavity_y - sensor_hole_offset,
                    -1])
             cylinder(h = lid_t + 2, d = sensor_hole_d);
-        // Zip-tie channels: on the top face (bottom in use) and on both
-        // long edges (front/back short-axis walls of the lid).
+        // Zip-tie channels: cut back through the bosses to the lid edge,
+        // plus a channel across the top face (ground-facing in use).
         for (xc = [tie_x_a, tie_x_b]) {
-            // Top face channel (runs across the lid in Y)
-            translate([xc - tie_w/2, -wall_t, lid_t - tie_d])
-                cube([tie_w, wall_ext_y, tie_d + 1]);
-            // Front long-edge channel (runs through lid in Z, 1.6 mm into the wall)
-            translate([xc - tie_w/2, -wall_t - 0.01, -1])
+            // Top face channel — extends over the boss bumps on each edge.
+            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, lid_t - tie_d])
+                cube([tie_w, wall_ext_y + 2*tie_d + 0.02, tie_d + 1]);
+            // Front edge boss channel
+            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -1])
                 cube([tie_w, tie_d + 0.01, lid_t + 2]);
-            // Back long-edge channel
-            translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -1])
+            // Back edge boss channel
+            translate([xc - tie_w/2, cavity_y + wall_t, -1])
                 cube([tie_w, tie_d + 0.01, lid_t + 2]);
         }
     }
