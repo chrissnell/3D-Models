@@ -95,7 +95,7 @@ magnet_positions = [
 
 // ---------- Gussets ----------
 gusset_count      = 5;
-gusset_run        = 30;    // along +Y (how far out along the shelf)
+gusset_run        = 40;    // along +Y (how far out along the shelf)
 gusset_rise       = 30;    // along +Z (how far down the backplate)
 gusset_t          = 4;     // along X (thickness)
 // Evenly spaced across the shelf width. Gussets live at Y ∈ [5, 35]
