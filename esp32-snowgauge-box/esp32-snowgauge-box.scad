@@ -4,7 +4,7 @@
 /* [Part] */
 // all = assembled preview; box/lid/gasket = printable 3D parts;
 // alignment-2d = 1:1 paper template exported to PDF.
-part = "lid"; // [all, box, lid, gasket, sensor-gasket, alignment-2d]
+part = "box"; // [all, box, lid, gasket, sensor-gasket, alignment-2d]
 
 $fa = 2;
 $fs = 0.3;
@@ -21,7 +21,7 @@ hole_edge_y     = 7.5;
 /* [Cavity] */
 cavity_x        = 190;   // 15 (right gap) + 82.5 (board) + 92.5 (open cavity)
 cavity_y        =  90;
-cavity_z        =  31;
+cavity_z        =  51;
 board_right_gap =  15;   // clearance from board right short-end to inner right wall (fits right-side pad)
 board_y_gap     =  15;   // clearance from board long edges (fits Y-side pads)
 
@@ -41,7 +41,8 @@ post_chamfer  = 0.5;
 pillar_od           = 11.0;   // nominal boss OD (only used for insert spacing checks)
 pillar_insert_d     = 5.7;
 pillar_insert_depth = 9.0;
-pillar_extension    = 3.0;   // height pillars project above wall top (must equal gasket_t)
+pillar_extension    = 0.0;   // pillars flush with wall top so the gasket
+                             // can seal under uniform compression
 
 // Rounded-pad pillars: each pillar is a rectangular pad in the inside wall
 // corner with the cavity-facing corner filleted. The M4 insert pocket sits
@@ -79,9 +80,25 @@ sensor_gasket_od = 35.0;
 sensor_gasket_t  = 3.0;
 
 /* [Cable gland] */
-cable_gland_d = 12.5;
-cable_gland_y = 22;   // centre Y (from front wall) along the left short-edge wall
-cable_gland_z = 10;   // centre Z above cavity floor
+cable_gland_d           = 12.5;
+cable_gland_y           = 30;    // centre Y (from front wall) of the front
+                                 // gland; the rear gland mirrors to
+                                 // cavity_y - cable_gland_y → 30 mm spacing
+cable_gland_z           = 14;    // centre Z above cavity floor (high enough
+                                 // for the interior bore to clear the floor)
+cable_gland_bore_d      = 25;    // interior relief bore for the gland body
+                                 // + nut clearance
+cable_gland_bore_depth  = 5;     // leaves wall_t - bore_depth = 3 mm of
+                                 // material (the gland's clamp range)
+
+/* [Lid centering lip] */
+// Downward-projecting frame on the lid underside that drops into the cavity
+// opening. The cavity walls centre the lip (and therefore the lid); the lip
+// is notched at its corners to clear the four corner pillar pads.
+lip_h         = 3.0;   // drop depth (must be <= pillar_extension)
+lip_wall      = 2.5;   // lip frame thickness
+lip_clearance = 0.4;   // gap between lip outer face and cavity wall
+lip_pad_clr   = 0.4;   // gap between lip corner notch and pad footprint
 
 /* [Alignment PDF] */
 cal_square_mm = 10;
@@ -133,8 +150,6 @@ assert(cavity_y >= board_y + 2*board_y_gap,
     "cavity_y must leave board_y_gap clearance on both long edges");
 assert(wall_ext_x <= 256 && wall_ext_y <= 256,
     "box exterior must fit on the 256 mm bed");
-assert(pillar_extension == gasket_t,
-    "pillar_extension must equal gasket_t so pillar tops sit flush with gasket top");
 assert(board_right_gap >= pad_size + 1,
     "board right edge collides with right-side corner pads — increase board_right_gap");
 assert(board_y_gap >= pad_size + 1,
@@ -143,6 +158,12 @@ assert(pad_fillet_r < pad_size,
     "pad_fillet_r must be smaller than pad_size");
 assert(pillar_insert_offset + pillar_insert_d/2 + 1.5 <= pad_size,
     "M4 pocket wall too thin — move pillar_insert_offset or grow pad_size");
+assert(cable_gland_bore_depth + 3 <= wall_t,
+    "cable_gland_bore_depth leaves less than 3 mm of outer wall material");
+assert(cavity_y - 2*cable_gland_y >= cable_gland_bore_d + 2,
+    "cable gland bores too close together — increase cable_gland_y spacing");
+assert(cable_gland_z >= cable_gland_bore_d/2 + 0.5,
+    "cable_gland_z too low — interior bore would cut into the floor");
 
 module mount_post() {
     difference() {
@@ -191,11 +212,12 @@ module box() {
                     linear_extrude(pillar_h)
                         scale([s[0], s[1]]) corner_pad_2d();
             }
-            // Zip-tie bosses: raised slabs on each long wall. Extend up
-            // through the gasket Z-range so the channel meets the lid boss
-            // flush — no wall-top material appears above the channel.
+            // Zip-tie bosses: raised slabs on each long wall. Boss top is
+            // flush with the wall top so no rails stick up into the gasket
+            // plane — across the gasket the tie just rides the flush
+            // box/gasket/lid exterior.
             tie_boss_w = tie_w + 2*tie_rail_w;
-            boss_h    = cavity_z + floor_t + gasket_t;   // floor bottom to gasket top
+            boss_h    = exterior_z;                      // floor bottom to wall top
             for (xc = [tie_x_a, tie_x_b]) {
                 translate([xc - tie_boss_w/2, -wall_t - tie_d, -floor_t])
                     cube([tie_boss_w, tie_d, boss_h]);
@@ -208,18 +230,27 @@ module box() {
         for (p = pillar_positions())
             translate([p[0], p[1], pillar_h - pillar_insert_depth])
                 cylinder(h = pillar_insert_depth + 0.01, d = pillar_insert_d);
-        // Cable gland: horizontal hole through the left short-edge wall.
-        translate([-wall_t - 1, cable_gland_y, cable_gland_z])
-            rotate([0, 90, 0])
-                cylinder(h = wall_t + 2, d = cable_gland_d);
+        // Cable glands: two horizontal holes through the left short-edge
+        // wall, symmetric across the wall centreline. Each gland also has
+        // an interior relief bore so its short body + nut can seat and
+        // turn with only ~3 mm of wall thickness in the clamp zone.
+        for (yc = [cable_gland_y, cavity_y - cable_gland_y]) {
+            translate([-wall_t - 1, yc, cable_gland_z])
+                rotate([0, 90, 0])
+                    cylinder(h = wall_t + 2, d = cable_gland_d);
+            translate([-cable_gland_bore_depth, yc, cable_gland_z])
+                rotate([0, 90, 0])
+                    cylinder(h = cable_gland_bore_depth + 0.01,
+                             d = cable_gland_bore_d);
+        }
         // Zip-tie channels: cut out of the bumped-out bosses on each long
         // wall, back to the original wall surface. Cut spans the full boss
-        // height (floor bottom to gasket top) so the channel is open-ended.
+        // height (floor bottom to wall top) so the channel is open-ended.
         for (xc = [tie_x_a, tie_x_b]) {
             translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -floor_t - 0.01])
-                cube([tie_w, tie_d + 0.01, cavity_z + floor_t + gasket_t + 0.02]);
+                cube([tie_w, tie_d + 0.01, exterior_z + 0.02]);
             translate([xc - tie_w/2, cavity_y + wall_t, -floor_t - 0.01])
-                cube([tie_w, tie_d + 0.01, cavity_z + floor_t + gasket_t + 0.02]);
+                cube([tie_w, tie_d + 0.01, exterior_z + 0.02]);
         }
     }
 }
@@ -239,6 +270,7 @@ module gasket() {
 module lid() {
     // Flat plate flush with the box exterior (no overhang, no drip edge).
     tie_boss_w = tie_w + 2*tie_rail_w;
+    lip_corner_w = pad_size + lip_pad_clr;
     difference() {
         union() {
             translate([-wall_t, -wall_t, 0])
@@ -251,6 +283,30 @@ module lid() {
                 translate([xc - tie_boss_w/2, cavity_y + wall_t, 0])
                     cube([tie_boss_w, tie_d, lid_t]);
             }
+            // Centering lip: rectangular frame on the underside that drops
+            // into the cavity opening. Corners are notched to clear the
+            // proud corner pads/pillars, which guide the lid into place.
+            translate([0, 0, -lip_h])
+                linear_extrude(lip_h) difference() {
+                    // Rim: outer rectangle minus inner rectangle
+                    difference() {
+                        translate([lip_clearance, lip_clearance])
+                            square([cavity_x - 2*lip_clearance,
+                                    cavity_y - 2*lip_clearance]);
+                        translate([lip_clearance + lip_wall,
+                                   lip_clearance + lip_wall])
+                            square([cavity_x - 2*(lip_clearance + lip_wall),
+                                    cavity_y - 2*(lip_clearance + lip_wall)]);
+                    }
+                    // Corner notches that clear each pad footprint
+                    for (c = [[0, 0],
+                              [cavity_x - lip_corner_w, 0],
+                              [0, cavity_y - lip_corner_w],
+                              [cavity_x - lip_corner_w,
+                               cavity_y - lip_corner_w]])
+                        translate(c)
+                            square([lip_corner_w, lip_corner_w]);
+                }
         }
         // M4 clearance holes at pillar positions, counterbored on top face.
         for (p = pillar_positions()) {
@@ -264,18 +320,17 @@ module lid() {
                    cavity_y - sensor_hole_offset,
                    -1])
             cylinder(h = lid_t + 2, d = sensor_hole_d);
-        // Zip-tie channels: cut back through the bosses to the lid edge,
-        // plus a channel across the top face (ground-facing in use).
+        // Zip-tie channels: cut through the front/back bosses and tie_d
+        // into the adjacent lid side edge, so the tie seats slightly
+        // recessed on the front and back faces. No top-face channel —
+        // the lid top stays smooth for a clean print.
         for (xc = [tie_x_a, tie_x_b]) {
-            // Top face channel — extends over the boss bumps on each edge.
-            translate([xc - tie_w/2, -wall_t - tie_d - 0.01, lid_t - tie_d])
-                cube([tie_w, wall_ext_y + 2*tie_d + 0.02, tie_d + 1]);
-            // Front edge boss channel
+            // Front edge: through the boss and tie_d into the lid body
             translate([xc - tie_w/2, -wall_t - tie_d - 0.01, -1])
-                cube([tie_w, tie_d + 0.01, lid_t + 2]);
-            // Back edge boss channel
-            translate([xc - tie_w/2, cavity_y + wall_t, -1])
-                cube([tie_w, tie_d + 0.01, lid_t + 2]);
+                cube([tie_w, 2*tie_d + 0.01, lid_t + 2]);
+            // Back edge: through the boss and tie_d into the lid body
+            translate([xc - tie_w/2, cavity_y + wall_t - tie_d, -1])
+                cube([tie_w, 2*tie_d + 0.01, lid_t + 2]);
         }
     }
 }
