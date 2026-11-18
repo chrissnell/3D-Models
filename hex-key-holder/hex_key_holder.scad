@@ -77,7 +77,7 @@ label_z           = 65;   // vertical center on backplate front face — clear
 // ---------- Magnets ----------
 magnet_od         = 15;
 magnet_t          = 3;
-magnet_pocket_od  = magnet_od - 0.15;   // press-fit interference
+magnet_pocket_od  = magnet_od + 0.1;    // nominal +0.1 mm; FDM hole shrinkage provides press-fit interference
 magnet_pocket_d   = magnet_t + 0.3;     // small over-depth for seating
 magnet_edge_inset = 15;                 // distance from short edges (X) and
                                         // from top/bottom edges (Z)
